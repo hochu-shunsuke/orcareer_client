@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { NavigationBar } from "@/components/navigation-bar";
 import Link from "next/link";
+import UserProfile from "@/components/user-profile";
 import { User, Building2, Heart, Settings, FileText, Bell, MapPin, Calendar, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,38 +28,9 @@ export default function UserPage({ params }: UserPageProps) {
           <div className="lg:col-span-1 max-w-lg w-full mx-auto">
             <Card>
               <CardContent className="p-8">
-                <div className="text-center mb-6">
-                  <Avatar className="w-24 h-24 mx-auto mb-4">
-                    <AvatarImage src="/user-profile-illustration.png" />
-                    <AvatarFallback className="text-2xl bg-orange-100 text-orange-600">{params.username[0] || "U"}</AvatarFallback>
-                  </Avatar>
-                  <h2 className="text-xl font-semibold">{params.username} さん</h2>
-                  <p className="text-gray-600">sample@example.com</p>
-                </div>
-                <Separator className="my-4" />
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>愛知県名古屋市</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>1998年4月生まれ</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Mail className="w-4 h-4" />
-                    <span>sample@example.com</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Phone className="w-4 h-4" />
-                    <span>090-1234-5678</span>
-                  </div>
-                </div>
-                <Separator className="my-4" />
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                  <Settings className="w-4 h-4 mr-2" />
-                  プロフィール編集
-                </Button>
+                {/* client-side component shows auth0 profile when available */}
+                {/* @ts-ignore */}
+                <UserProfile usernameParam={params.username} />
               </CardContent>
             </Card>
           </div>
@@ -154,6 +126,15 @@ export default function UserPage({ params }: UserPageProps) {
                         <Button variant="outline" size="sm">
                           変更
                         </Button>
+                      </div>
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <div>
+                          <h4 className="font-medium">ログアウト</h4>
+                          <p className="text-sm text-gray-600">現在のセッションを終了します</p>
+                        </div>
+                        <a href="/auth/logout">
+                          <Button variant="outline" size="sm">ログアウト</Button>
+                        </a>
                       </div>
                       <div className="flex items-center justify-between py-3">
                         <div>

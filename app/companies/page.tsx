@@ -15,8 +15,6 @@ import { getCompanies } from "@/data/mockData"
 export default function CompaniesPage() {
   const companies = getCompanies();
 
-  console.log('Companies data:', companies); // デバッグ用
-
   const industryField = {
     label: "業界",
     placeholder: "業界を選択",
