@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import Link from "next/link"
 import Image from "next/image"
+import { useUser } from "@auth0/nextjs-auth0"
+import { usePathname } from "next/navigation"
 
 interface NavigationItem {
   href: string
@@ -27,6 +29,10 @@ export function NavigationBar({
   currentPage,
   showMobileButtons = true 
 }: NavigationBarProps) {
+  const { user } = useUser()
+  const pathname = usePathname() ?? ''
+  const isOnUserPage = pathname.startsWith('/user')
+  const username = user ? encodeURIComponent(user.nickname || user.preferred_username || user.name || user.sub) : ''
   const getNavItemClass = (itemPage: string) => {
     const isActive = currentPage === itemPage
     return isActive 
@@ -61,24 +67,25 @@ export function NavigationBar({
             </nav>
           </div>
           
-          {/* Desktop Login Button */}
-          <Link href="/user/sample">
-            <Button variant="outline" className="hidden md:block border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent">
-              マイページ
-            </Button>
-          </Link>
-
+          {/* Auth buttons */}
+          <div>
+            {!user ? (
+              <a href="/auth/login" className="hidden md:inline-block text-orange-600 border border-orange-600 px-3 py-1 rounded hover:bg-orange-50">ログイン</a>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Link href={`/user/${username}`}>
+                  <Button variant="outline" className="hidden md:block border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent">
+                    マイページ
+                  </Button>
+                </Link>
+                {/* logout is moved to user settings page */}
+              </div>
+            )}
+          </div>
           {/* Mobile Buttons & Hamburger */}
           {showMobileButtons && (
             <div className="md:hidden flex items-center space-x-2">
-              <Link href="/user/sample">
-                <Button
-                  variant="outline"
-                  className="border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent h-8 px-3 text-xs"
-                >
-                  マイページ
-                </Button>
-              </Link>
+              {/* mobile top buttons removed; show auth button in sheet bottom */}
               
               {/* Mobile Navigation Menu */}
               <Sheet>
@@ -110,14 +117,25 @@ export function NavigationBar({
                       </Link>
                     ))}
                     <div className="flex flex-col gap-4 mt-4 border-t pt-4">
-                      <Link href="/user/sample">
-                        <Button
-                          variant="outline"
-                          className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent"
-                        >
-                          ログイン
-                        </Button>
-                      </Link>
+                      {!user ? (
+                        <a href="/auth/login">
+                          <Button
+                            variant="outline"
+                            className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent"
+                          >
+                            ログイン
+                          </Button>
+                        </a>
+                      ) : (
+                        <Link href={`/user/${username}`}>
+                          <Button
+                            variant="outline"
+                            className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent"
+                          >
+                            マイページ
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </SheetContent>
