@@ -1,6 +1,40 @@
-#!/usr/bin/env node
 "use strict"
 // check-env.js
+// ローカルで実行する場合は .env.local を読み込む
+function loadEnvLocal() {
+  try {
+    // まず dotenv があれば使う
+    const dotenv = require('dotenv')
+    dotenv.config({ path: '.env.local' })
+    return
+  } catch (e) {
+    // dotenv が無い場合は自前でパースする
+  }
+
+  const fs = require('fs')
+  const path = '.env.local'
+  if (!fs.existsSync(path)) return
+  try {
+    const raw = fs.readFileSync(path, 'utf8')
+    raw.split(/\r?\n/).forEach((line) => {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) return
+      const eq = trimmed.indexOf('=')
+      if (eq === -1) return
+      const key = trimmed.slice(0, eq).trim()
+      let val = trimmed.slice(eq + 1).trim()
+      // remove surrounding quotes
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1)
+      }
+      if (process.env[key] === undefined) process.env[key] = val
+    })
+  } catch (err) {
+    // ignore parse errors
+  }
+}
+
+loadEnvLocal()
 // 環境変数の存在をビルド前に検証する簡易スクリプト
 const required = [
   'APP_BASE_URL',
