@@ -14,8 +14,6 @@ import { getAllInternships } from "@/data/mockData"
 
 export default function InternshipsPage() {
   const internships = getAllInternships();
-  
-  console.log('Internships data:', internships); // デバッグ用
 
   const durationField = {
     label: "期間",

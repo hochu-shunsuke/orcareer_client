@@ -15,8 +15,6 @@ import { getAllJobs } from "@/data/mockData"
 export default function JobsPage() {
   const jobs = getAllJobs();
   
-  console.log('Jobs data:', jobs); // デバッグ用
-
   const jobTypeField = {
     label: "職種",
     placeholder: "職種を選択",
