@@ -1,0 +1,312 @@
+// 新卒採用アプリケーション データベース設計
+// Database: PostgreSQL (Supabase)
+// Authentication: Auth0
+
+Project orcareer {
+  database_type: 'PostgreSQL'
+  Note: '新卒採用Webアプリケーションオルキャリ'
+}
+
+// ========================================
+// ユーザー関連テーブル
+// ========================================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  auth0_user_id varchar(255) [unique, not null, note: 'Auth0のユーザーID']
+  email varchar(255) [unique, not null, note: 'メールアドレス']
+  last_login_at timestamptz [note: '最終ログイン日時']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    auth0_user_id
+  }
+}
+
+Table user_profiles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: > users.id, note: 'ユーザーID']
+  last_name varchar(100) [not null, note: '姓']
+  first_name varchar(100) [not null, note: '名']
+  last_name_kana varchar(100) [not null, note: '姓（ふりがな）']
+  first_name_kana varchar(100) [not null, note: '名（ふりがな）']
+  university varchar(255) [not null, note: '大学名']
+  faculty varchar(255) [note: '学部（NULL許容）']
+  department varchar(255) [note: '学科（NULL許容）']
+  graduation_year integer [not null, note: '卒業年']
+  phone_number varchar(20) [not null, note: '電話番号']
+  postal_code varchar(10) [not null, note: '郵便番号']
+  address text [not null, note: '住所']
+  birthday date [not null, note: '生年月日']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    graduation_year
+    university
+  }
+}
+
+Table user_details {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: > users.id, note: 'ユーザーID']
+  self_pr text [note: '自己PR']
+  gakuchika text [note: '学生時代に力を入れたこと']
+  skill text [note: '保有スキル']
+  qualification text [note: '資格']
+  portfolio_url varchar(500) [note: 'ポートフォリオURL']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+// ========================================
+// マスタデータテーブル
+// ========================================
+
+Table company_statuses {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(50) [unique, not null, note: 'draft/published/archived']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table listing_classifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '上場区分名']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table industries {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '業界名']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table job_types {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '職種名']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table prefectures {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(20) [unique, not null, note: '都道府県名']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  prefecture_id uuid [not null, ref: > prefectures.id, note: '都道府県ID']
+  name varchar(50) [not null, note: 'エリア名']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    prefecture_id
+    (prefecture_id, name) [unique]
+  }
+}
+
+Table internship_tags {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: 'タグ名']
+  category varchar(50) [note: 'タグカテゴリ']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    category
+  }
+}
+
+// ========================================
+// 企業関連テーブル
+// ========================================
+
+Table companies {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(255) [not null, note: '企業名']
+  name_kana varchar(255) [note: '企業名（ふりがな）']
+  logo_url varchar(500) [note: 'ロゴ画像URL']
+  website_url varchar(500) [note: '会社紹介ページURL']
+  status_id uuid [ref: > company_statuses.id, note: 'ステータスID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    status_id
+  }
+}
+
+Table company_overviews {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [unique, not null, ref: > companies.id, note: '企業ID']
+  industry_id uuid [ref: > industries.id, note: '業界ID']
+  established_year integer [note: '設立年']
+  headquarters_address text [note: '本社住所']
+  employee_count integer [note: '従業員数']
+  listing_classification_id uuid [ref: > listing_classifications.id, note: '上場区分ID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    industry_id
+    listing_classification_id
+  }
+}
+
+Table company_data {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [unique, not null, ref: > companies.id, note: '企業ID']
+  profile text [note: 'プロフィール']
+  business_content text [note: '事業内容']
+  headquarters_location text [note: '本社所在地']
+  offices text [note: '事業所']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table company_mvvs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [unique, not null, ref: > companies.id, note: '企業ID']
+  mission text [note: 'ミッション']
+  vision text [note: 'ビジョン']
+  company_value text [note: 'バリュー']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table company_contacts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id, note: '企業ID']
+  contact_name varchar(100) [note: '担当者名']
+  phone_number varchar(20) [note: '電話番号']
+  email varchar(255) [note: 'メールアドレス']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    company_id
+  }
+}
+
+Table company_areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id, note: '企業ID']
+  area_id uuid [not null, ref: > areas.id, note: 'エリアID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    company_id
+    area_id
+    (company_id, area_id) [unique]
+  }
+}
+
+// ========================================
+// インターンシップ関連テーブル
+// ========================================
+
+Table internships {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id, note: '企業ID']
+  title varchar(255) [note: 'インターンシップタイトル（NULL許容）']
+  job_type_id uuid [ref: > job_types.id, note: '職種ID']
+  job_type_description text [note: '職種の説明']
+  job_description text [note: '仕事内容']
+  skills_to_acquire text [note: '身につくスキル']
+  work_location varchar(255) [note: '勤務地']
+  work_hours varchar(255) [note: '勤務時間']
+  hourly_wage varchar(100) [note: '時給']
+  required_skills text [note: '必須スキル']
+  preferred_skills text [note: '歓迎スキル']
+  selection_flow text [note: '選考フロー']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    company_id
+    job_type_id
+  }
+}
+
+Table internship_tag_relations {
+  id uuid [pk, default: `gen_random_uuid()`]
+  internship_id uuid [not null, ref: > internships.id, note: 'インターンシップID']
+  tag_id uuid [not null, ref: > internship_tags.id, note: 'タグID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    internship_id
+    tag_id
+    (internship_id, tag_id) [unique]
+  }
+}
+
+Table internship_areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  internship_id uuid [not null, ref: > internships.id, note: 'インターンシップID']
+  area_id uuid [not null, ref: > areas.id, note: 'エリアID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    internship_id
+    area_id
+    (internship_id, area_id) [unique]
+  }
+}
+
+// ========================================
+// 本選考関連テーブル
+// ========================================
+
+Table recruitments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id, note: '企業ID']
+  job_type_id uuid [ref: > job_types.id, note: '職種ID']
+  job_type_description text [note: '職種の説明']
+  job_description text [note: '仕事内容']
+  work_location varchar(255) [note: '勤務地']
+  work_hours varchar(255) [note: '勤務時間']
+  number_of_hires varchar(100) [note: '募集人数']
+  salary_bonus text [note: '給与・賞与']
+  annual_holidays integer [note: '年間休日数']
+  holidays_leave text [note: '休日休暇']
+  benefits text [note: '待遇・福利厚生・社内制度']
+  selection_flow text [note: '選考フロー']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    company_id
+    job_type_id
+  }
+}
+
+Table recruitment_areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  recruitment_id uuid [not null, ref: > recruitments.id, note: '本選考ID']
+  area_id uuid [not null, ref: > areas.id, note: 'エリアID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    recruitment_id
+    area_id
+    (recruitment_id, area_id) [unique]
+  }
+}
+
+// ========================================
+// お気に入り機能テーブル
+// ========================================
+
+Table favorites {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id, note: 'ユーザーID']
+  company_id uuid [not null, ref: > companies.id, note: '企業ID']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: 'お気に入り登録日時']
+  
+  indexes {
+    user_id
+    company_id
+    (user_id, company_id) [unique]
+  }
+}
