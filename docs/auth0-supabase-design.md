@@ -110,6 +110,14 @@ UNIQUE(user_id, company_id) — 重複お気に入り防止
   - 実装影響: サーバー内で生成するユーティリティを用意。DB 側の `gen_random_uuid()` と混在しない運用ルールをドキュメントに明記。
   - 次のアクション: UUID v7 ライブラリの採用とユーティリティ実装。
 
+## 現状の決定
+
+- パターン: Pattern A を正式採用（サーバ経由の書き込みのみ許可）。クライアントは Supabase に直接 JWT を渡さない。書き込みはすべて `SUPABASE_SERVICE_ROLE_KEY` を使うサーバ側経由とする。
+- public_id: サーバ（Next.js）で NanoID（10 文字、base62）を生成して付与する。DB 側の軽量乱数生成関数は無効化するか、暗号強度の高い実装に置き換える。
+- users テーブル: DB 側で RLS を適用し、ユーザは自身の行のみ参照/更新可能とする（既存の `auth0_sub_to_user_id` 関数を SECURITY DEFINER として利用）。
+- 公開アクセス: クライアント向けは公開ビュー（`v_*`）のみを許可し、anon ロールにはベーステーブルへの直接 SELECT を与えない。
+- 監査ログ: `audit_changes()` は `performed_by` を COALESCE(current_setting('jwt.claims.sub', true), 'service') で記録する。これにより service-role による変更は明示的に 'service' として残る。
+
 ---
 
 ## 6. 認証フロー詳細（確定仕様）
