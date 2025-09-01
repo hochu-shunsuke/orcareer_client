@@ -18,7 +18,7 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
       .from('users')
       .select('id, public_id')
       .eq('auth0_user_id', auth0Sub)
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       // 既存ユーザーの更新
