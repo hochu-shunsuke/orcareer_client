@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useUser } from "@auth0/nextjs-auth0"
 import { usePathname } from "next/navigation"
+import { useEffect } from "react"
 
 interface NavigationItem {
   href: string
@@ -29,10 +30,55 @@ export function NavigationBar({
   currentPage,
   showMobileButtons = true 
 }: NavigationBarProps) {
-  const { user } = useUser()
+  const { user, isLoading } = useUser()
   const pathname = usePathname() ?? ''
   const isOnUserPage = pathname.startsWith('/user')
   const username = user ? encodeURIComponent(user.nickname || user.preferred_username || user.name || user.sub) : ''
+  
+  // Auth0ログイン完了時にSupabaseにユーザー同期（セッション中1回のみ）
+  useEffect(() => {
+    if (user && !isLoading) {
+      const syncKey = `user_synced_${user.sub}`;
+      
+      // セッション中に既に同期済みかチェック
+      if (sessionStorage.getItem(syncKey)) {
+        console.log('User already synced in this session, skipping...');
+        return;
+      }
+      
+      // デバッグ: ユーザーオブジェクトの内容を確認
+      console.log('Auth0 user object:', user);
+      
+      // ログイン済みユーザーをSupabaseに同期
+      fetch('/api/auth/sync-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sub: user.sub,
+          email: user.email,
+          name: user.name,
+          picture: user.picture,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('User sync successful:', data);
+          // セッション中の同期完了フラグを設定
+          sessionStorage.setItem(syncKey, 'synced');
+        } else {
+          console.error('User sync failed:', data);
+        }
+      })
+      .catch(error => {
+        console.error('User sync failed:', error);
+        // サイレントエラー - ユーザー体験を阻害しない
+      });
+    }
+  }, [user, isLoading]);
+  
   const getNavItemClass = (itemPage: string) => {
     const isActive = currentPage === itemPage
     return isActive 
