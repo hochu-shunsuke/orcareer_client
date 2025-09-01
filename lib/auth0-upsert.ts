@@ -34,7 +34,19 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
         .eq('id', existingUser.id);
 
       if (error) {
-        console.error('Failed to update existing user:', error);
+        // 構造化ログで詳細なエラー情報を記録
+        console.error('Failed to update existing user:', {
+          auth0_sub: auth0Sub,
+          email,
+          error_code: error.code,
+          error_message: error.message,
+          error_details: error.details,
+          timestamp: new Date().toISOString()
+        });
+        
+        // TODO: 本番環境では外部ログサービス（Sentry, CloudWatch等）に送信
+        // await logError('auth0_user_update_failed', { auth0Sub, email, error });
+        
         return; // エラーでもセッション継続のためthrowしない
       }
       
@@ -53,7 +65,19 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
         });
 
       if (error) {
-        console.error('Failed to create new user:', error);
+        // 構造化ログで詳細なエラー情報を記録
+        console.error('Failed to create new user:', {
+          auth0_sub: auth0Sub,
+          email,
+          error_code: error.code,
+          error_message: error.message,
+          error_details: error.details,
+          timestamp: new Date().toISOString()
+        });
+        
+        // TODO: 本番環境では外部ログサービス（Sentry, CloudWatch等）に送信
+        // await logError('auth0_user_creation_failed', { auth0Sub, email, error });
+        
         return; // エラーでもセッション継続のためthrowしない
       }
       

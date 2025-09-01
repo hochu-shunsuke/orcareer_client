@@ -36,13 +36,13 @@ export async function selectUserIdByAuth0Sub(auth0Sub: string) {
 
 /**
  * NanoID-like generator (base62) for public_id. No external dependency.
+ * Uses crypto.randomInt for uniform distribution without bias.
  */
 export function generatePublicId(size = 10): string {
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const bytes = crypto.randomBytes(size);
   let id = '';
   for (let i = 0; i < size; i++) {
-    id += alphabet[bytes[i] % alphabet.length];
+    id += alphabet[crypto.randomInt(alphabet.length)];
   }
   return id;
 }
