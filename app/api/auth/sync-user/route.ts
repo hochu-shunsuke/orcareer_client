@@ -5,45 +5,121 @@ import { upsertUserToSupabase } from '@/lib/auth0-upsert';
  * ユーザー同期API: クライアントから送信されたユーザー情報をSupabaseに同期
  * POST /api/auth/sync-user
  */
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    console.log('Received user data:', body);
-    
-    const { sub, email, name, picture } = body;
-    
-    console.log('Extracted values:', { sub, email, name, picture });
-    
+    // Auth0の /auth/profile エンドポイントから渡される完全なプロフィールデータを受け取る
+    const profileData = await request.json();
+    console.log('Received profile data:', profileData);
+
+    const { 
+      sub,
+      email, 
+      name,
+      given_name,
+      family_name,
+      nickname,
+      picture,
+      email_verified 
+    } = profileData;
+
     if (!sub) {
-      console.log('Missing required data - sub:', !!sub);
-      return NextResponse.json({
-        error: 'Missing required user ID (sub)',
-        received: { sub: !!sub, email: !!email, name: !!name, picture: !!picture }
-      }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'Missing required sub field' },
+        { status: 400 }
+      );
     }
-    
-    // emailがない場合のフォールバック処理
-    let finalEmail = email;
-    if (!finalEmail) {
-      console.log('Email not provided by OAuth provider, using fallback');
-      // プロバイダー名を取得 (例: "facebook|123" → "facebook")
-      const provider = sub.split('|')[0] || 'oauth';
-      const userId = sub.split('|')[1] || sub.replace(/[^a-zA-Z0-9]/g, '');
-      finalEmail = `${provider}_${userId}@no-email.orcareer.local`;
+
+    // 汎用的なemailフォールバック（全OAuthプロバイダー対応）
+    let userEmail = email;
+    if (!userEmail) {
+      // プロバイダー別のフォールバックemail生成
+      if (sub.startsWith('facebook|')) {
+        const userId = sub.replace('facebook|', '');
+        userEmail = `${userId}@facebook.oauth`;
+      } else if (sub.startsWith('apple|')) {
+        const userId = sub.replace('apple|', '');
+        userEmail = `${userId}@apple.oauth`;
+      } else if (sub.startsWith('microsoft|')) {
+        const userId = sub.replace('microsoft|', '');
+        userEmail = `${userId}@microsoft.oauth`;
+      } else if (sub.startsWith('auth0|')) {
+        // 通常のAuth0メール認証の場合、実際のemailがあるはず
+        const userId = sub.replace('auth0|', '');
+        userEmail = `${userId}@auth0.local`;
+      } else {
+        // その他のプロバイダー（Twitter, LinkedIn等）
+        const providerMatch = sub.match(/^([^|]+)\|(.+)$/);
+        if (providerMatch) {
+          const [, provider, userId] = providerMatch;
+          userEmail = `${userId}@${provider}.oauth`;
+        } else {
+          // フォールバック
+          userEmail = `${sub}@unknown.oauth`;
+        }
+      }
+      console.log('Generated fallback email:', userEmail);
     }
+
+    // 汎用的な表示名の決定（優先順位: name > nickname > "given_name family_name" > subから生成）
+    let displayName = '';
     
-    await upsertUserToSupabase(sub, finalEmail, name, picture);
-    
-    return NextResponse.json({
-      success: true,
-      message: 'User synchronized successfully'
+    // 1. name フィールド（最優先）
+    if (name && name.trim()) {
+      displayName = name.trim();
+    }
+    // 2. nickname フィールド
+    else if (nickname && nickname.trim()) {
+      displayName = nickname.trim();
+    }
+    // 3. given_name + family_name の組み合わせ
+    else if (given_name && family_name) {
+      displayName = `${family_name.trim()} ${given_name.trim()}`.trim();
+    }
+    // 4. given_name のみ
+    else if (given_name && given_name.trim()) {
+      displayName = given_name.trim();
+    }
+    // 5. family_name のみ
+    else if (family_name && family_name.trim()) {
+      displayName = family_name.trim();
+    }
+    // 6. subから生成（最終フォールバック）
+    else {
+      if (sub.startsWith('facebook|')) {
+        displayName = 'Facebookユーザー';
+      } else if (sub.startsWith('google-oauth2|')) {
+        displayName = 'Googleユーザー';
+      } else if (sub.startsWith('apple|')) {
+        displayName = 'Appleユーザー';
+      } else if (sub.startsWith('microsoft|')) {
+        displayName = 'Microsoftユーザー';
+      } else if (sub.startsWith('auth0|')) {
+        displayName = 'ユーザー';
+      } else {
+        const providerMatch = sub.match(/^([^|]+)\|/);
+        const provider = providerMatch ? providerMatch[1] : 'Unknown';
+        displayName = `${provider}ユーザー`;
+      }
+    }
+
+    await upsertUserToSupabase(sub, userEmail, displayName, picture);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'User synced successfully',
+      userData: {
+        sub,
+        email: userEmail,
+        displayName,
+        picture,
+        emailVerified: email_verified
+      }
     });
   } catch (error) {
-    console.error('User sync error:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: 'User synchronization failed'
-    }, { status: 500 });
+    console.error('Sync user API error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

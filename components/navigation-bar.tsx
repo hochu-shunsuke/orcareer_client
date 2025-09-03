@@ -35,7 +35,7 @@ export function NavigationBar({
   const isOnUserPage = pathname.startsWith('/user')
   const username = user ? encodeURIComponent(user.nickname || user.preferred_username || user.name || user.sub) : ''
   
-  // Auth0ログイン完了時にSupabaseにユーザー同期（セッション中1回のみ）
+  // Auth0標準の /auth/profile を使用してSupabaseにユーザー同期（セッション中1回のみ）
   useEffect(() => {
     if (user && !isLoading) {
       const syncKey = `user_synced_${user.sub}`;
@@ -46,36 +46,35 @@ export function NavigationBar({
         return;
       }
       
-      // デバッグ: ユーザーオブジェクトの内容を確認
-      console.log('Auth0 user object:', user);
-      
-      // ログイン済みユーザーをSupabaseに同期
-      fetch('/api/auth/sync-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sub: user.sub,
-          email: user.email,
-          name: user.name,
-          picture: user.picture,
-        }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          console.log('User sync successful:', data);
-          // セッション中の同期完了フラグを設定
-          sessionStorage.setItem(syncKey, 'synced');
-        } else {
-          console.error('User sync failed:', data);
-        }
-      })
-      .catch(error => {
-        console.error('User sync failed:', error);
-        // サイレントエラー - ユーザー体験を阻害しない
-      });
+      // Auth0標準の /auth/profile エンドポイントから最新データを取得してSupabaseに同期
+      fetch('/auth/profile')
+        .then(response => response.json())
+        .then(profileData => {
+          console.log('Auth0 profile data:', profileData);
+          
+          // Supabaseに同期（upsert処理）
+          return fetch('/api/auth/sync-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(profileData),
+          });
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('User sync successful:', data);
+            // セッション中の同期完了フラグを設定
+            sessionStorage.setItem(syncKey, 'synced');
+          } else {
+            console.error('User sync failed:', data);
+          }
+        })
+        .catch(error => {
+          console.error('User sync failed:', error);
+          // サイレントエラー - ユーザー体験を阻害しない
+        });
     }
   }, [user, isLoading]);
   
