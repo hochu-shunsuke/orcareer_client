@@ -1,0 +1,404 @@
+// 新卒採用アプリケーション データベース設計（具体例付き）
+// Database: PostgreSQL (Supabase)
+// Authentication: Auth0
+
+Project orcareer {
+  database_type: 'PostgreSQL'
+}
+
+// ========================================
+// ユーザー関連テーブル
+// ========================================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  auth0_user_id varchar(255) [unique, not null, note: 'Auth0のユーザーID | 例: auth0|507f1f77bcf86cd799439011']
+  email varchar(255) [unique, not null, note: 'メールアドレス | 例: yamada.taro@example.com']
+  last_login_at timestamptz [note: '最終ログイン日時 | 例: 2025-08-22 10:30:00']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    auth0_user_id
+  }
+}
+
+Table user_profiles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: > users.id]
+  last_name varchar(100) [not null, note: '姓 | 例: 山田']
+  first_name varchar(100) [not null, note: '名 | 例: 太郎']
+  last_name_kana varchar(100) [not null, note: '姓（ふりがな） | 例: やまだ']
+  first_name_kana varchar(100) [not null, note: '名（ふりがな） | 例: たろう']
+  university varchar(255) [not null, note: '大学名 | 例: 名古屋大学, 静岡大学, 三重大学']
+  faculty varchar(255) [note: '学部 | 例: 工学部, 経済学部, 情報学部']
+  department varchar(255) [note: '学科 | 例: 情報工学科, 経営学科, 機械工学科']
+  graduation_year integer [not null, note: '卒業年 | 例: 2026, 2027']
+  phone_number varchar(20) [not null, note: '電話番号 | 例: 090-1234-5678']
+  postal_code varchar(10) [not null, note: '郵便番号 | 例: 460-0001']
+  address text [not null, note: '住所 | 例: 愛知県名古屋市中区三の丸1-1-1']
+  birthday date [not null, note: '生年月日 | 例: 2003-04-15']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table user_details {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [unique, not null, ref: > users.id]
+  self_pr text [note: '''自己PR | 例:
+    私は学生時代、ITベンチャーで長期インターンを経験し、
+    Webアプリケーション開発に携わってきました。
+    特にReactを用いたフロントエンド開発が得意です。''']
+  gakuchika text [note: '''ガクチカ | 例:
+    大学祭実行委員会で広報部長として、
+    SNSを活用した集客施策を企画・実行し、
+    前年比150%の来場者数を達成しました。''']
+  skill text [note: 'スキル | 例: JavaScript, React, Python, SQL, Git']
+  qualification text [note: '資格 | 例: 基本情報技術者試験, TOEIC 800点, 簿記2級']
+  portfolio_url varchar(500) [note: 'ポートフォリオURL | 例: https://github.com/yamada-taro']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+// ========================================
+// マスタデータテーブル
+// ========================================
+
+Table company_statuses {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(50) [unique, not null, note: '''ステータス名 | 例:
+    - draft: 下書き
+    - published: 公開中
+    - archived: 非公開''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  
+  Note: '企業ページの公開状態を管理'
+}
+
+Table listing_classifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '''上場区分 | 例:
+    - 東証プライム
+    - 東証スタンダード
+    - 東証グロース
+    - 名証プレミア
+    - 非上場''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table industries {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '''業界名 | 例:
+    - メーカー
+    - 商社
+    - 小売・流通
+    - 金融
+    - サービス・インフラ
+    - ソフトウェア・通信
+    - 広告・出版・マスコミ''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table job_types {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '''職種名 | 例:
+    - 事務・管理系
+    - 企画・マーケティング系
+    - 営業系
+    - 技術・研究系
+    - 販売・サービス系
+    - 専門系
+    - 医療・福祉系
+    - 金融系
+    - クリエイティブ系
+    - IT系
+    - 教育・保育・公共サービス系''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table prefectures {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(50) [unique, not null, note: '''都道府県名 | 例:
+    - 北海道
+    - 東京都
+    - 愛知県
+    - 静岡県
+    - 三重県
+    - 岐阜県
+    - 沖縄県''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  prefecture_id uuid [not null, ref: > prefectures.id]
+  name varchar(100) [not null, note: '''エリア名 | 例:
+    - 西三河（豊田市、岡崎市、刈谷市など）
+    - 東三河（豊橋市、豊川市、蒲郡市など）
+    - 名古屋（名古屋市全域）
+    - 尾張（一宮市、春日井市、小牧市など）
+    - 東部（沼津市、三島市、富士市など）
+    - 中部（静岡市、焼津市、藤枝市など）
+    - 西部（浜松市、磐田市、掛川市など）
+    - 北勢（四日市市、桑名市、鈴鹿市など）
+    - 中勢（津市、松阪市など）
+    - 伊賀（伊賀市、名張市）
+    - 伊勢志摩（伊勢市、鳥羽市、志摩市）
+    - 東紀州（尾鷲市、熊野市など）
+    - 西濃（大垣市、海津市など）
+    - 岐阜（岐阜市、各務原市など）
+    - 中濃（関市、美濃市など）
+    - 東濃（多治見市、土岐市など）
+    - 飛騨（高山市、飛騨市など）''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    prefecture_id
+    (prefecture_id, name) [unique]
+  }
+}
+
+Table internship_tags {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [unique, not null, note: '''タグ名 | 例:
+    - 週10時間以下でも可
+    - 未経験者歓迎
+    - 1･2年生も歓迎
+    - 1カ月からOK
+    - 理系学生におすすめ
+    - 起業ノウハウ
+    - リモート可
+    - インセンティブ・成果報酬あり
+    - 土日も可
+    - 土日のみ
+    - 積極採用中''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+// ========================================
+// 企業関連テーブル
+// ========================================
+
+Table companies {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(255) [not null, note: '企業名 | 例:株式会社テックイノベーション']
+  name_kana varchar(255) [not null, note: 'ふりがな | 例: てっくいのべーしょん']
+  logo_url varchar(500) [note: 'ロゴURL | 例: https://storage.orcareer.com/logos/toyota.png']
+  website_url varchar(500) [note: '企業サイト | 例: https://www.toyota.co.jp']
+  status_id uuid [not null, ref: > company_statuses.id, note: 'ステータス（published）']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    status_id
+    name
+  }
+}
+
+Table company_overviews {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [unique, not null, ref: > companies.id]
+  industry_id uuid [ref: > industries.id]
+  establishment_year varchar(20) [note: '設立年 | 例: 2015年4月']
+  address text [note: '本社所在地 | 例: 愛知県名古屋市中区錦3-1-1']
+  employee_count varchar(100) [note: '従業員数 | 例: 85名']
+  listing_classification_id uuid [ref: > listing_classifications.id, note: '上場区分']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table company_data {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [unique, not null, ref: > companies.id]
+  profile text [note: '企業プロフィール | 例:']
+  business_content text [note: '事業内容 | 例:Webアプリケーション開発、モバイルアプリ開発、システムインテグレーション、 ITコンサルティング、クラウドソリューション提供など、 最新技術を活用したソフトウェア開発事業を展開しています。']
+  headquarters_location text [note: '本社所在地（詳細） | 例:〒460-0003 愛知県名古屋市中区錦3-1-1 名古屋錦ビル10F']
+  offices text [note: '''事業所 | 例:
+    ・本社: 愛知県名古屋市中区錦3-1-1
+    ・東京支社: 東京都渋谷区恵比寿1-2-3
+    ・大阪支社: 大阪府大阪市北区梅田2-4-5''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table company_mvvs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [unique, not null, ref: > companies.id]
+  mission text [note: 'ミッション | 例:テクノロジーで社会課題を解決し、より良い未来を創造する']
+  vision text [note: 'ビジョン | 例:東海地区No.1のITソリューションプロバイダーになる']
+  company_value text [note: 'バリュー | 例:挑戦・成長・協働']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+}
+
+Table company_contacts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id]
+  contact_name varchar(255) [note: '担当者名 | 例: 人事部 田中 太郎']
+  phone_number varchar(20) [note: '電話番号 | 例: 052-123-4567']
+  email varchar(255) [note: 'メール | 例: recruit@example.com']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    company_id
+  }
+}
+
+Table company_areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id]
+  area_id uuid [not null, ref: > areas.id]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  indexes {
+    company_id
+    area_id
+    (company_id, area_id) [unique]
+  }
+}
+
+// ========================================
+// インターンシップ関連テーブル
+// ========================================
+
+Table internships {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id]
+  title varchar(255) [not null, note: 'タイトル | 例:未来のエンジニア募集！Reactでの開発インターンシップ！']
+  job_type_id uuid [ref: > job_types.id]
+  job_type_description text [note: '職種説明 | 例:実際の開発プロジェクトに参加し、最新技術を学べる環境です。']
+  job_description text [note: '''仕事内容 | 例:
+    ・Webアプリケーションの開発・保守
+    ・データベース設計・構築
+    ・API開発
+    ・テスト設計・実行''']
+  skills_to_acquire text [note: '''身につくスキル | 例:
+    ・React・Next.jsを使ったモダンなフロントエンド開発
+    ・Node.js・TypeScriptによるバックエンド開発
+    ・AWS・Dockerを活用したクラウド開発
+    ・Git・GitHubを使ったチーム開発
+    ・アジャイル開発手法の実践
+    ・データベース設計・SQL最適化
+    ・API設計・RESTful開発''']
+  work_location text [note: '勤務地 | 例:愛知県名古屋市中区']
+  work_hours text [note: '勤務時間 | 例:週20時間以上（応相談）']
+  wage varchar(100) [note: '時給 | 例: 1,200円〜2,000円']
+  required_skills text [note: '必須スキル | 例:プログラミング経験（言語不問）']
+  preferred_skills text [note: '''歓迎スキル | 例:
+    ・AWSの設計経験
+    ・Gitの経験''']
+  selection_flow text [note: '''選考フロー | 例:
+    1. 書類選考
+    2. 一次面接（オンライン）
+    3. 技術面接
+    4. 最終面接''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    company_id
+    job_type_id
+  }
+}
+
+Table internship_tag_filters { // こだわり条件
+  id uuid [pk, default: `gen_random_uuid()`]
+  internship_id uuid [not null, ref: > internships.id]
+  tag_id uuid [not null, ref: > internship_tags.id]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    internship_id
+    tag_id
+    (internship_id, tag_id) [unique]
+  }
+}
+
+Table internship_areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  internship_id uuid [not null, ref: > internships.id]
+  area_id uuid [not null, ref: > areas.id]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  indexes {
+    internship_id
+    area_id
+    (internship_id, area_id) [unique]
+  }
+}
+
+// ========================================
+// 本選考関連テーブル
+// ========================================
+
+Table recruitments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  company_id uuid [not null, ref: > companies.id]
+  job_type_id uuid [ref: > job_types.id]
+  job_type_description text [note: '職種説明 | 例:最新技術を活用したWebアプリケーション開発に携わっていただきます。']
+  job_description text [note: '''仕事内容 | 例:
+    ・Webアプリケーションの設計・開発
+    ・システムアーキテクチャの検討
+    ・チームでの開発プロジェクト推進
+    ・技術選定・導入''']
+  work_location text [note: '勤務地 | 例:愛知県名古屋市中区']
+  work_hours text [note: '勤務時間 | 例:9:00〜18:00（フレックス制度あり）']
+  application_requirements text [note: '''募集条件 | 例:
+    - Reactのコーディング経験1年以上
+    - TypeScriptのコーディング経験''']
+  number_of_hires varchar(100) [note: '募集人数 | 例:3名']
+  salary_bonus text [note: '給与・賞与 | 例:年収400万円〜700万円']
+  annual_holidays integer [note: '年間休日数 | 例: 125日']
+  holidays_leave text [note: '休日休暇 | 例:完全週休2日制、祝日、夏季・年末年始休暇']
+  benefits text [note: '''待遇・福利厚生・社内制度 | 例:
+    ・社会保険完備
+    ・交通費支給
+    ・書籍購入費補助
+    ・技術カンファレンス参加費補助
+    ・リモートワーク制度''']
+  allowance text [note: '''諸手当 | 例:
+    ・出張手当
+    ・出産手当
+    ・育児手当''']
+  selection_flow text [note: '''選考フロー | 例:
+    1. 書類選考
+    2. 一次面接
+    3. 技術面接・コーディングテスト
+    4. 最終面接''']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    company_id
+    job_type_id
+  }
+}
+
+Table recruitment_areas {
+  id uuid [pk, default: `gen_random_uuid()`]
+  recruitment_id uuid [not null, ref: > recruitments.id]
+  area_id uuid [not null, ref: > areas.id]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    recruitment_id
+    area_id
+    (recruitment_id, area_id) [unique]
+  }
+}
+
+// ========================================
+// お気に入り機能テーブル
+// ========================================
+
+Table favorites {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  company_id uuid [not null, ref: > companies.id]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: 'お気に入り登録日時']
+
+  indexes {
+    user_id
+    company_id
+    (user_id, company_id) [unique]
+  }
+}
