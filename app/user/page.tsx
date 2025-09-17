@@ -1,44 +1,19 @@
-"use client";
-import { useEffect, useState } from "react";
-import { getAccessToken } from "@auth0/nextjs-auth0";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// 仮のダミーユーザー情報（本番は /api/auth/me などで取得してpropsで渡す）
+const dummyProfile = {
+  email: "dummy@example.com",
+  auth0_user_id: "auth0|dummyid",
+  created_at: "2025-09-18T00:00:00Z",
+  last_login_at: "2025-09-18T12:00:00Z",
+};
+
 export default function UserPage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        // /api/auth/access-token からJWTを取得
-        const tokenRes = await fetch("/api/auth/access-token");
-        const tokenData = await tokenRes.json();
-        if (!tokenRes.ok || !tokenData.accessToken) throw new Error(tokenData.error || "JWT取得失敗");
-        // JWTでAPI Routeにリクエスト
-        const res = await fetch("/api/user/profile", {
-          headers: { Authorization: `Bearer ${tokenData.accessToken}` },
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "API error");
-        setProfile(data.user);
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProfile();
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>エラー: {error}</div>;
-  if (!profile) return <div>ユーザー情報が見つかりません</div>;
-
+  const profile = dummyProfile;
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">ユーザープロファイル</h1>
