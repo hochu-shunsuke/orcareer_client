@@ -11,24 +11,7 @@ begin;
 create extension IF not exists "pgcrypto";
 
 -- === Helper functions (must be defined before usage) ===
-create or replace function public.generate_public_id (length integer default 10) RETURNS text as $$
-DECLARE
-  chars text := '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  res text := '';
-  rnd bytea;
-  b int;
-BEGIN
-  IF length <= 0 THEN
-    RETURN '';
-  END IF;
-  rnd := gen_random_bytes(length);
-  FOR i IN 0..(length - 1) LOOP
-    b := get_byte(rnd, i) % 62;
-    res := res || substr(chars, b + 1, 1);
-  END LOOP;
-  RETURN res;
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+-- Note: generate_public_id function removed as we now use SERIAL admin_id for admin searches
 
 -- === Master / lookup tables ===
 create table if not exists public.company_statuses (
@@ -83,20 +66,23 @@ create index IF not exists idx_internship_tags_category on public.internship_tag
 -- === Users and profiles ===
 create table if not exists public.users (
   id uuid primary key default gen_random_uuid (),
-  public_id varchar(32) unique not null default public.generate_public_id (10),
-  auth0_user_id varchar(255) unique not null,
+  admin_id SERIAL UNIQUE NOT NULL,
+  sub varchar(255) unique not null,
   email varchar(255) unique not null check (
     email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
   ),
   display_name varchar(255),
   avatar_url text,
+  user_type varchar(50) DEFAULT 'student',
   last_login_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
   deleted_at timestamptz
 );
 
-create index IF not exists idx_users_auth0_user_id on public.users (auth0_user_id);
+create index IF not exists idx_users_sub on public.users (sub);
+create index IF not exists idx_users_user_type on public.users (user_type);
+create index IF not exists idx_users_admin_id on public.users (admin_id);
 
 create table if not exists public.user_profiles (
   id uuid primary key default gen_random_uuid (),
@@ -142,7 +128,7 @@ create table if not exists public.user_details (
 -- === Companies and related tables ===
 create table if not exists public.companies (
   id uuid primary key default gen_random_uuid (),
-  public_id varchar(32) unique not null default public.generate_public_id (10),
+  admin_id SERIAL UNIQUE NOT NULL,
   name varchar(255) not null,
   name_kana varchar(255),
   logo_url varchar(500),
@@ -406,7 +392,7 @@ $$;
 
 -- === Auth0 helper ===
 create or replace function public.auth0_sub_to_user_id (auth0_sub text) RETURNS uuid LANGUAGE sql SECURITY DEFINER as $$
-  SELECT id FROM public.users WHERE auth0_user_id = auth0_sub LIMIT 1;
+  SELECT id FROM public.users WHERE sub = auth0_sub LIMIT 1;
 $$;
 
 -- === updated_at helper ===
@@ -447,13 +433,13 @@ alter table public.users ENABLE row LEVEL SECURITY;
 -- Allow service role to bypass RLS automatically
 -- Only add policy if JWT integration is needed in future
 -- CREATE POLICY IF NOT EXISTS users_self_select ON public.users
---   FOR SELECT USING (auth0_user_id = current_setting('jwt.claims.sub', true));
+--   FOR SELECT USING (sub = current_setting('jwt.claims.sub', true));
 -- User profiles: Enable RLS for future JWT support
 alter table public.user_profiles ENABLE row LEVEL SECURITY;
 
 -- CREATE POLICY IF NOT EXISTS user_profiles_owner ON public.user_profiles
 --   FOR ALL USING (
---     EXISTS (SELECT 1 FROM public.users u WHERE u.id = user_profiles.user_id AND u.auth0_user_id = current_setting('jwt.claims.sub', true))
+--     EXISTS (SELECT 1 FROM public.users u WHERE u.id = user_profiles.user_id AND u.sub = current_setting('jwt.claims.sub', true))
 --   );
 -- User details: Enable RLS for future JWT support
 alter table public.user_details ENABLE row LEVEL SECURITY;
@@ -474,7 +460,7 @@ alter table public.applications ENABLE row LEVEL SECURITY;
 create or replace view public.v_companies_public as
 select
   id,
-  public_id,
+  admin_id,
   name,
   name_kana,
   logo_url,
@@ -515,7 +501,7 @@ where
 
 create or replace view public.v_users_public as
 select
-  public_id,
+  admin_id,
   display_name,
   avatar_url
 from
@@ -574,7 +560,7 @@ from
 create or replace view public.v_companies_with_details as
 select
   c.id,
-  c.public_id,
+  c.admin_id,
   c.name,
   c.name_kana,
   c.logo_url,
