@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { NavigationBar } from "@/components/navigation-bar";
 import Link from "next/link";
-import UserProfile from "@/components/user-profile";
+// UserProfileの内容をこのファイルに統合
 import { User, Building2, Heart, Settings, FileText, Bell, MapPin, Calendar, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,15 +10,31 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 
+import { auth0 } from '@/lib/auth0';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { redirect } from 'next/navigation';
+
 export const metadata: Metadata = {
-  title: "ユーザーページ",
+  title: "マイページ - オルキャリ",
 };
 
-interface UserPageProps {
-  params: { username: string };
-}
 
-export default function UserPage({ params }: UserPageProps) {
+export default async function UserPage() {
+  // サーバー側でAuth0セッション取得
+  const session = await auth0.getSession();
+  if (!session || !session.user) {
+    redirect('/auth/login');
+  }
+
+  // Supabaseからユーザーデータ取得
+  const supabase = createServerSupabaseClient();
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('sub', session.user.sub)
+    .maybeSingle();
+
+  // userデータをUserProfileに渡す
   return (
     <div className="min-h-screen bg-gray-50">
       <NavigationBar />
@@ -28,9 +44,29 @@ export default function UserPage({ params }: UserPageProps) {
           <div className="lg:col-span-1 max-w-lg w-full mx-auto">
             <Card>
               <CardContent className="p-8">
-                {/* client-side component shows auth0 profile when available */}
-                {/* @ts-ignore */}
-                <UserProfile usernameParam={params.username} />
+                {/* UserProfile統合: supabaseユーザー情報を直接表示 */}
+                <div className="text-center mb-6">
+                  <Avatar className="w-24 h-24 mx-auto mb-4">
+                    {user?.avatar_url ? (
+                      <AvatarImage src={user.avatar_url} />
+                    ) : (
+                      <AvatarFallback className="text-2xl bg-orange-100 text-orange-600">
+                        {(user?.display_name || user?.name || user?.email || user?.sub || 'U')[0]}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <h2 className="text-2xl font-bold text-gray-900">{user?.display_name || user?.name || user?.email || user?.sub}</h2>
+                  <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
+                  {user?.last_login_at && (
+                    <div className="text-xs text-gray-400 mt-2">最終ログイン: {new Date(user.last_login_at).toLocaleString()}</div>
+                  )}
+                </div>
+                <div className="mt-6">
+                  {/* プロフィール編集ボタン例（必要に応じて表示制御） */}
+                  {/* <Link href={`/user/${encodeURIComponent(user?.sub)}`}> */}
+                  {/*   <Button className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700">プロフィール編集</Button> */}
+                  {/* </Link> */}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -133,7 +169,9 @@ export default function UserPage({ params }: UserPageProps) {
                           <p className="text-sm text-gray-600">現在のセッションを終了します</p>
                         </div>
                         <a href="/auth/logout">
-                          <Button variant="outline" size="sm">ログアウト</Button>
+                          <Button variant="outline" size="sm">
+                            ログアウト
+                          </Button>
                         </a>
                       </div>
                       <div className="flex items-center justify-between py-3">
