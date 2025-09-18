@@ -1,19 +1,20 @@
-import { MapPin, Building2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { JobCard } from "@/components/job-card"
-import { StudentArticles } from "@/components/student-articles"
-import { EventInfo } from "@/components/event-info"
-import { SearchHero } from "@/components/search-hero"
-import { NavigationBar } from "@/components/navigation-bar"
-import { Footer } from "@/components/footer"
+import { MapPin, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { JobCard } from "@/components/job-card";
+import { StudentArticles } from "@/components/student-articles";
+import { EventInfo } from "@/components/event-info";
+import { SearchHero } from "@/components/search-hero";
+import { NavigationBar } from "@/components/navigation-bar";
+import { Footer } from "@/components/footer";
 import { fetchRecruitmentsWithCompany } from "@/lib/fetch-jobs";
+import { Job } from "@/data/types";
 
 export default async function JobsPage() {
-  let recruitments: any[] = [];
+  let recruitments: Job[] = [];
   try {
     recruitments = await fetchRecruitmentsWithCompany();
   } catch (error) {
@@ -72,32 +73,7 @@ export default async function JobsPage() {
             {recruitments.length > 0 ? (
               <div className="space-y-6">
                 {recruitments.map((rec) => (
-                  <JobCard key={rec.id} job={{
-                    id: rec.id,
-                    company_id: rec.company_id,
-                    job_type_id: rec.job_type_id,
-                    job_type_description: rec.job_type_description,
-                    job_description: rec.job_description,
-                    work_location: rec.work_location,
-                    work_hours: rec.work_hours,
-                    number_of_hires: rec.number_of_hires,
-                    salary_bonus: rec.salary_bonus,
-                    annual_holidays: rec.annual_holidays,
-                    holidays_leave: rec.holidays_leave,
-                    benefits: rec.benefits,
-                    selection_flow: rec.selection_flow,
-                    created_at: rec.created_at,
-                    updated_at: rec.updated_at,
-                    company: rec.company ? {
-                      id: rec.company.id,
-                      name: rec.company.name,
-                      logo: rec.company.logo_url,
-                      location: rec.company.location,
-                      industry: rec.company.industry,
-                      employeeCount: rec.company.employeeCount,
-                      capital: rec.company.capital
-                    } : undefined
-                  }} />
+                  <JobCard key={rec.id} job={rec} />
                 ))}
               </div>
             ) : (
