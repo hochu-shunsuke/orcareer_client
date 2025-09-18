@@ -10,18 +10,15 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   }
 }
 
-let _client: SupabaseClient | null = null;
 
 export function createSupabaseClient(): SupabaseClient {
-  if (_client) return _client;
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error('Supabase client env not configured');
   }
-  _client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false },
     global: { headers: { 'x-orcareer-client': '1' } },
   });
-  return _client;
 }
 
 export default createSupabaseClient;
