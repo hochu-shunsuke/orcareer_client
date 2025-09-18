@@ -11,9 +11,10 @@ import { SearchHero } from "@/components/search-hero"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
 import { fetchInternships } from "@/lib/fetch-internships"
+import { Internship } from "@/types";
 
 export default async function InternshipsPage() {
-  let internships = [];
+  let internships: Internship[] = [];
   try {
     internships = await fetchInternships();
   } catch (error) {

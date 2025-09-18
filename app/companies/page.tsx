@@ -11,9 +11,11 @@ import { SearchHero } from "@/components/search-hero"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
 import { fetchCompanies } from "@/lib/fetch-companies"
+import { Company } from "@/types"
 
+// export default async を追加して、コンポーネント関数を定義
 export default async function CompaniesPage() {
-  let companies = [];
+  let companies: Company[] = [];
   try {
     companies = await fetchCompanies();
   } catch (error) {

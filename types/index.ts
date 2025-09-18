@@ -1,4 +1,4 @@
-// データ型定義
+// アプリ全体で使う型定義
 // companiesテーブルの全カラムに準拠したCompany型
 export interface Company {
   id: string;

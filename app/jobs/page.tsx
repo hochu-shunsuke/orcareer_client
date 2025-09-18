@@ -11,7 +11,7 @@ import { SearchHero } from "@/components/search-hero";
 import { NavigationBar } from "@/components/navigation-bar";
 import { Footer } from "@/components/footer";
 import { fetchRecruitmentsWithCompany } from "@/lib/fetch-jobs";
-import { Job } from "@/data/types";
+import { Job } from "@/types";
 
 export default async function JobsPage() {
   let recruitments: Job[] = [];
