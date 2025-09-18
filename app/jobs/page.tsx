@@ -10,11 +10,17 @@ import { EventInfo } from "@/components/event-info"
 import { SearchHero } from "@/components/search-hero"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
-import { getAllJobs } from "@/data/mockData"
+import { fetchRecruitmentsWithCompany } from "@/lib/fetch-jobs";
 
-export default function JobsPage() {
-  const jobs = getAllJobs();
-  
+export default async function JobsPage() {
+  let recruitments: any[] = [];
+  try {
+    recruitments = await fetchRecruitmentsWithCompany();
+  } catch (error) {
+    console.error('[jobs/page] fetchRecruitmentsWithCompany error:', error);
+    return <div className="container mx-auto py-12 text-red-600">求人データの取得に失敗しました（詳細はサーバーログ参照）</div>;
+  }
+
   const jobTypeField = {
     label: "職種",
     placeholder: "職種を選択",
@@ -47,8 +53,7 @@ export default function JobsPage() {
           <div className="flex-1 order-1 lg:order-1">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <div>
-                <h1 className="text-2xl font-bold mb-2">求人一覧</h1>
-                <p className="text-gray-600">検索結果: {jobs.length}件</p>
+                <p className="text-gray-600">検索結果: {recruitments.length}件</p>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <span className="text-sm text-gray-600">並び替え:</span>
@@ -64,11 +69,35 @@ export default function JobsPage() {
                 </Select>
               </div>
             </div>
-
-            {jobs.length > 0 ? (
+            {recruitments.length > 0 ? (
               <div className="space-y-6">
-                {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
+                {recruitments.map((rec) => (
+                  <JobCard key={rec.id} job={{
+                    id: rec.id,
+                    company_id: rec.company_id,
+                    job_type_id: rec.job_type_id,
+                    job_type_description: rec.job_type_description,
+                    job_description: rec.job_description,
+                    work_location: rec.work_location,
+                    work_hours: rec.work_hours,
+                    number_of_hires: rec.number_of_hires,
+                    salary_bonus: rec.salary_bonus,
+                    annual_holidays: rec.annual_holidays,
+                    holidays_leave: rec.holidays_leave,
+                    benefits: rec.benefits,
+                    selection_flow: rec.selection_flow,
+                    created_at: rec.created_at,
+                    updated_at: rec.updated_at,
+                    company: rec.company ? {
+                      id: rec.company.id,
+                      name: rec.company.name,
+                      logo: rec.company.logo_url,
+                      location: rec.company.location,
+                      industry: rec.company.industry,
+                      employeeCount: rec.company.employeeCount,
+                      capital: rec.company.capital
+                    } : undefined
+                  }} />
                 ))}
               </div>
             ) : (
@@ -110,5 +139,5 @@ export default function JobsPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

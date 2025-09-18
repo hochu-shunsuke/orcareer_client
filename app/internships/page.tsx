@@ -10,10 +10,16 @@ import { EventInfo } from "@/components/event-info"
 import { SearchHero } from "@/components/search-hero"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
-import { getAllInternships } from "@/data/mockData"
+import { fetchInternships } from "@/lib/fetch-internships"
 
-export default function InternshipsPage() {
-  const internships = getAllInternships();
+export default async function InternshipsPage() {
+  let internships = [];
+  try {
+    internships = await fetchInternships();
+  } catch (error) {
+    console.error('[internships/page] fetchInternships error:', error);
+    return <div className="container mx-auto py-12 text-red-600">インターンデータの取得に失敗しました（詳細はサーバーログ参照）</div>;
+  }
 
   const durationField = {
     label: "期間",

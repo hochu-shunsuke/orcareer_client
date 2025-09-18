@@ -10,10 +10,16 @@ import { EventInfo } from "@/components/event-info"
 import { SearchHero } from "@/components/search-hero"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
-import { getCompanies } from "@/data/mockData"
+import { fetchCompanies } from "@/lib/fetch-companies"
 
-export default function CompaniesPage() {
-  const companies = getCompanies();
+export default async function CompaniesPage() {
+  let companies = [];
+  try {
+    companies = await fetchCompanies();
+  } catch (error) {
+    console.error('[companies/page] fetchCompanies error:', error);
+    return <div className="container mx-auto py-12 text-red-600">企業データの取得に失敗しました（詳細はサーバーログ参照）</div>;
+  }
 
   const industryField = {
     label: "業界",
