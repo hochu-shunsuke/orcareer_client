@@ -7,7 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useUser } from "@auth0/nextjs-auth0"
 import { usePathname } from "next/navigation"
-import { useEffect } from "react"
+// ...existing code...
 
 interface NavigationItem {
   href: string
@@ -35,48 +35,7 @@ export function NavigationBar({
   const isOnUserPage = pathname.startsWith('/user')
   const username = user ? encodeURIComponent(user.nickname || user.preferred_username || user.name || user.sub) : ''
   
-  // Auth0標準の /auth/profile を使用してSupabaseにユーザー同期（セッション中1回のみ）
-  useEffect(() => {
-    if (user && !isLoading) {
-      const syncKey = `user_synced_${user.sub}`;
-      
-      // セッション中に既に同期済みかチェック
-      if (sessionStorage.getItem(syncKey)) {
-        console.log('User already synced in this session, skipping...');
-        return;
-      }
-      
-      // Auth0標準の /auth/profile エンドポイントから最新データを取得してSupabaseに同期
-      fetch('/auth/profile')
-        .then(response => response.json())
-        .then(profileData => {
-          console.log('Auth0 profile data:', profileData);
-          
-          // Supabaseに同期（upsert処理）
-          return fetch('/api/auth/sync-user', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(profileData),
-          });
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            console.log('User sync successful:', data);
-            // セッション中の同期完了フラグを設定
-            sessionStorage.setItem(syncKey, 'synced');
-          } else {
-            console.error('User sync failed:', data);
-          }
-        })
-        .catch(error => {
-          console.error('User sync failed:', error);
-          // サイレントエラー - ユーザー体験を阻害しない
-        });
-    }
-  }, [user, isLoading]);
+  // ユーザー同期などの副作用処理は責務外とし、ここでは一切行わない
   
   const getNavItemClass = (itemPage: string) => {
     const isActive = currentPage === itemPage
@@ -118,7 +77,7 @@ export function NavigationBar({
               <a href="/auth/login" className="hidden md:inline-block text-orange-600 border border-orange-600 px-3 py-1 rounded hover:bg-orange-50">ログイン</a>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href={`/user/${username}`}>
+                <Link href={`/user`}>
                   <Button variant="outline" className="hidden md:block border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent">
                     マイページ
                   </Button>
@@ -172,7 +131,7 @@ export function NavigationBar({
                           </Button>
                         </a>
                       ) : (
-                        <Link href={`/user/${username}`}>
+                        <Link href={`/user`}>
                           <Button
                             variant="outline"
                             className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent"
