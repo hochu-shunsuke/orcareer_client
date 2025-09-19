@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Company } from "@/data/types";
+import { Company } from "@/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Star } from "lucide-react";

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Internship } from "@/data/types";
+import { Internship } from "@/types";
 import Link from "next/link";
 
 interface InternshipCardProps {

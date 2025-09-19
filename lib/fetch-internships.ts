@@ -1,15 +1,17 @@
+
 import { createSupabaseClient } from "@/lib/supabase-client";
-import { Internship } from "@/data/types";
+import { Internship } from "@/types";
 
 /**
- * internshipsテーブルの全件を取得するサーバー用関数
+ * internships + companies情報をJOINして取得するサーバー用関数
  */
-export async function fetchInternships(): Promise<Internship[]> {
+export async function fetchInternshipsWithCompany(): Promise<import("@/types").Internship[]> {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('internships')
-    .select('*')
+    .select(`*, company:companies(*)`)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  // companyがnullのものは除外（念のため）
+  return (data ?? []).filter((i: any) => i.company);
 }

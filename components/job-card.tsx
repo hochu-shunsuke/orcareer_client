@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, Banknote, Star } from "lucide-react";
-import { Job } from "@/data/types";
+import { Job } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -23,30 +23,30 @@ export function JobCard({ job }: JobCardProps) {
         <div className="flex flex-col sm:flex-row gap-6">
           {/* 左カラム：企業画像 */}
           <div className="sm:w-1/3 w-full h-48 flex-shrink-0 bg-white flex items-center justify-center">
-            {company ? (
-              <Image
-                src={company.logo && company.logo.trim() !== '' ? company.logo : '/placeholder-logo.svg'}
-                alt={`${company.name}のロゴ`}
-                width={200}
-                height={200}
-                className="object-contain"
-              />
-            ) : (
-              <Image
-                src={'/placeholder-logo.svg'}
-                alt="No Image"
-                width={200}
-                height={200}
-                className="object-contain"
-              />
-            )}
+              {company && company.logo_url ? (
+                <Image
+                  src={company.logo_url}
+                  alt={`${company.name}のロゴ`}
+                  width={200}
+                  height={200}
+                  className="object-contain"
+                />
+              ) : (
+                <Image
+                  src={'/placeholder-logo.svg'}
+                  alt="No Image"
+                  width={200}
+                  height={200}
+                  className="object-contain"
+                />
+              )}
           </div>
 
           {/* 右カラム：情報ブロック */}
           <div className="flex-1 flex flex-col justify-between">
             <div>
               {/* 企業名 */}
-              <h2 className="text-xl font-bold mb-2">{company ? company.name : '不明な企業'}</h2>
+              <h2 className="text-xl font-bold mb-2">{company?.name ?? '不明な企業'}</h2>
 
               {/* 職種・雇用形態 */}
               <div className="mb-2 flex flex-wrap gap-2">
@@ -93,23 +93,13 @@ export function JobCard({ job }: JobCardProps) {
                 </div>
               )}
 
-              {/* アイコン付き情報 */}
-              <div className="flex flex-wrap gap-4 mb-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  <span>{company?.employeeCount ?? "不明"}人</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Banknote className="w-4 h-4" />
-                  <span>{formatCapital(company?.capital)}</span>
-                </div>
-              </div>
+              {/* アイコン付き情報（省略 or 必要なら拡張） */}
             </div>
 
             {/* アクションボタン */}
             <div className="flex gap-3 mb-4">
               <Button asChild>
-                <Link href={company ? `/companies/${company.id}` : "#"}>詳細を見る</Link>
+                <Link href={company?.id ? `/companies/${company.id}` : "#"}>詳細を見る</Link>
               </Button>
             </div>
 

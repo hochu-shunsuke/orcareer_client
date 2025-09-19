@@ -34,11 +34,8 @@ export interface Job {
   company?: {
     id: string;
     name: string;
-    logo: string;
-    location?: string;
-    industry?: string;
-    employeeCount?: number;
-    capital?: number;
+    logo_url: string;
+    // 必要に応じて他のプロパティも追加
   };
 }
 
