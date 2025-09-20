@@ -1,10 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Company } from "@/types";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Calendar, ExternalLink, Star } from "lucide-react";
-import { Company } from "@/data/types";
 import Link from "next/link";
-import Image from "next/image";
+import { Star } from "lucide-react";
 
 interface CompanyCardProps {
   company: Company;
@@ -14,68 +12,31 @@ export function CompanyCard({ company }: CompanyCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row gap-6">
-          {/* 左カラム：企業画像（白背景＋最大幅固定） */}
-          <div className="sm:w-1/3 w-full h-48 flex-shrink-0 bg-white flex items-center justify-center rounded">
-            <Image
-              src={company.logo}
-              alt={`${company.name}のロゴ`}
-              width={200}
-              height={200}
-              className="object-contain"
-            />
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+          {/* 左カラム：企業ロゴ */}
+          <div className="w-32 h-32 flex-shrink-0 bg-white flex items-center justify-center rounded">
+            {company.logo_url && company.logo_url.trim() !== '' ? (
+              <img
+                src={company.logo_url}
+                alt={`${company.name}のロゴ`}
+                width={128}
+                height={128}
+                className="object-contain"
+              />
+            ) : (
+              <img
+                src={"/placeholder-logo.svg"}
+                alt="No Logo"
+                width={128}
+                height={128}
+                className="object-contain opacity-60"
+              />
+            )}
           </div>
-
-          {/* 右カラム */}
-          <div className="flex-1 flex flex-col justify-between">
-            <div>
-              {/* 企業名とタグ */}
-              <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold">{company.name}</h2>
-                <Badge variant="secondary">{company.industry}</Badge>
-                <Badge variant="outline">{company.prefecture}</Badge>
-              </div>
-
-              {/* 説明 */}
-              <p className="text-sm text-muted-foreground mb-4">
-                {company.description}
-              </p>
-
-              {/* アイコン付き情報 */}
-              <div className="flex flex-wrap gap-4 mb-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{company.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  <span>{company.employees.toLocaleString()}名</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>設立 {company.established}年</span>
-                </div>
-              </div>
-
-              {/* 募集情報 */}
-              <div className="mb-4 text-sm">
-                <span className="text-muted-foreground">募集中：</span>
-                <span className="font-medium text-blue-600">
-                  求人{company.jobs.length}件
-                </span>
-                {company.internships.length > 0 && (
-                  <>
-                    <span className="text-muted-foreground mx-2">・</span>
-                    <span className="font-medium text-green-600">
-                      インターン{company.internships.length}件
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* アクションボタン */}
-            <div className="flex gap-3">
+          {/* 右カラム：情報・アクション */}
+          <div className="flex-1 w-full">
+            <h2 className="text-xl font-bold mb-2">{company.name}</h2>
+            <div className="flex gap-3 mt-4 md:mt-0">
               <Button asChild>
                 <Link href={`/companies/${company.id}`}>詳細を見る</Link>
               </Button>
@@ -83,6 +44,11 @@ export function CompanyCard({ company }: CompanyCardProps) {
                 <Star className="w-4 h-4 mr-1" />
                 お気に入り
               </Button>
+            </div>
+            {/* デバッグ用コード */}
+            <div className="bg-gray-100 text-xs p-2 rounded break-all mt-4">
+              <strong>Companyオブジェクト全体:</strong>
+              <pre>{JSON.stringify(company, null, 2)}</pre>
             </div>
           </div>
         </div>
