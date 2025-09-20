@@ -1,31 +1,43 @@
-import { MapPin, Building2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { InternshipCard } from "@/components/internship-card"
-import { StudentArticles } from "@/components/student-articles"
-import { EventInfo } from "@/components/event-info"
-import { SearchHero } from "@/components/search-hero"
-import { NavigationBar } from "@/components/navigation-bar"
-import { Footer } from "@/components/footer"
-import { getAllInternships } from "@/data/mockData"
+import { MapPin, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { InternshipCard } from "@/components/internship-card";
+import { StudentArticles } from "@/components/student-articles";
+import { EventInfo } from "@/components/event-info";
+import { SearchHero } from "@/components/search-hero";
+import { NavigationBar } from "@/components/navigation-bar";
+import { Footer } from "@/components/footer";
+import { fetchInternshipsWithCompany } from "@/lib/fetch-internships";
 
-export default function InternshipsPage() {
-  const internships = getAllInternships();
+// 💡 修正: 非同期コンポーネントとして export default を追加
+export default async function InternshipPage() {
+  let internships: any[] = [];
+  try {
+    // 💡 修正: try-catchブロック内で await を使用
+    internships = await fetchInternshipsWithCompany();
+  } catch (error) {
+    console.error("[internships/page] fetchInternshipsWithCompany error:", error);
+    return (
+      <div className="container mx-auto py-12 text-red-600">
+        インターンデータの取得に失敗しました（詳細はサーバーログ参照）
+      </div>
+    );
+  }
 
   const durationField = {
     label: "期間",
     placeholder: "期間を選択",
-    type: 'select' as const,
+    type: "select" as const,
     options: [
       { value: "1week", label: "1週間" },
       { value: "2weeks", label: "2週間" },
       { value: "1month", label: "1ヶ月" },
       { value: "3months", label: "3ヶ月" },
-      { value: "6months", label: "6ヶ月以上" }
-    ]
+      { value: "6months", label: "6ヶ月以上" },
+    ],
   };
 
   return (
@@ -109,5 +121,5 @@ export default function InternshipsPage() {
 
       <Footer />
     </div>
-  )
+  );
 }
