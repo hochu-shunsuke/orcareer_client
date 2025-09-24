@@ -22,8 +22,8 @@ interface NavigationBarProps {
 
 const navigationItems: NavigationItem[] = [
   { href: "/companies", label: "企業一覧" },
-  { href: "/jobs", label: "求人検索" },
-  { href: "/internships", label: "インターンシップ" }
+  { href: "/internships", label: "インターンシップ" },
+  { href: "https://student.orca-career.com/", label: "就活コラム" }
 ]
 
 export function NavigationBar({ 
