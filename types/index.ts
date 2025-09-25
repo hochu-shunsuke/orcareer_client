@@ -11,6 +11,31 @@ export interface Company {
   created_at: string | null;
   updated_at: string | null;
   deleted_at: string | null;
+  // 企業に紐づく求人一覧
+  recruitments?: Job[];
+  // 企業の業界・従業員数など（company_overviews）
+  company_overviews?: {
+    id: string;
+    company_id: string;
+    industry_id: string | null;
+    established_year: number | null;
+    headquarters_address: string | null;
+    employee_count: number | null;
+    listing_classification_id: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+  };
+  // 企業の本社情報など（company_data）
+  company_data?: {
+    id: string;
+    company_id: string;
+    profile: string | null;
+    business_content: string | null;
+    headquarters_location: string | null;
+    offices: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+  };
 }
 
 // recruitmentsテーブルの全カラムに準拠したJob型
