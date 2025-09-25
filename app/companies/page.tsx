@@ -5,22 +5,22 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CompanyCard } from "@/components/company-card"
-import { StudentArticles } from "@/components/student-articles"
-import { EventInfo } from "@/components/event-info"
+import { StudentArticles } from "@/components/student-articles";
+import { EventInfo } from "@/components/event-info";
 import { SearchHero } from "@/components/search-hero"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
-import { fetchCompanies } from "@/lib/fetch-companies"
+import { fetchCompaniesWithRecruitments } from "@/lib/fetch-companies"
 import { Company } from "@/types"
 
 // export default async を追加して、コンポーネント関数を定義
 export default async function CompaniesPage() {
   let companies: Company[] = [];
   try {
-    companies = await fetchCompanies();
+    companies = await fetchCompaniesWithRecruitments();
   } catch (error) {
-    console.error('[companies/page] fetchCompanies error:', error);
-    return <div className="container mx-auto py-12 text-red-600">企業データの取得に失敗しました（詳細はサーバーログ参照）</div>;
+    console.error('[companies/page] fetchCompaniesWithRecruitments error:', error);
+    return <div className="container mx-auto py-12 text-red-600">企業データの取得に失敗しました</div>;
   }
 
   const industryField = {
@@ -113,64 +113,8 @@ export default async function CompaniesPage() {
           {/* Sidebar - Student Articles */}
           <div className="w-full lg:w-80 order-2 lg:order-2">
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>学生向け記事</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                    <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-white font-bold">就活ガイド</span>
-                    </div>
-                    <h4 className="font-semibold text-sm mb-2">就活の始め方完全ガイド</h4>
-                    <p className="text-xs text-gray-600">初めての就活で何から始めればいいかわからない方へ</p>
-                  </div>
-
-                  <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                    <div className="w-full h-32 bg-gradient-to-r from-green-400 to-green-600 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-white font-bold">面接対策</span>
-                    </div>
-                    <h4 className="font-semibold text-sm mb-2">面接で好印象を与える方法</h4>
-                    <p className="text-xs text-gray-600">面接官に印象を残すためのテクニック集</p>
-                  </div>
-
-                  <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                    <div className="w-full h-32 bg-gradient-to-r from-purple-400 to-purple-600 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-white font-bold">ES対策</span>
-                    </div>
-                    <h4 className="font-semibold text-sm mb-2">エントリーシート書き方講座</h4>
-                    <p className="text-xs text-gray-600">通過率を上げるES作成のポイント</p>
-                  </div>
-
-                  <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                    <div className="w-full h-32 bg-gradient-to-r from-red-400 to-red-600 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-white font-bold">業界研究</span>
-                    </div>
-                    <h4 className="font-semibold text-sm mb-2">IT業界の最新動向</h4>
-                    <p className="text-xs text-gray-600">成長著しいIT業界の現状と将来性</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>イベント情報</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="border-l-4 border-orange-500 pl-4">
-                    <h4 className="font-semibold text-sm">合同企業説明会</h4>
-                    <p className="text-xs text-gray-600">3月15日（金）開催</p>
-                  </div>
-                  <div className="border-l-4 border-blue-500 pl-4">
-                    <h4 className="font-semibold text-sm">IT業界セミナー</h4>
-                    <p className="text-xs text-gray-600">3月20日（水）開催</p>
-                  </div>
-                  <div className="border-l-4 border-green-500 pl-4">
-                    <h4 className="font-semibold text-sm">面接対策講座</h4>
-                    <p className="text-xs text-gray-600">3月25日（月）開催</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <StudentArticles />
+              <EventInfo />
             </div>
           </div>
         </div>

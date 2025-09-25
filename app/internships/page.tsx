@@ -22,7 +22,7 @@ export default async function InternshipPage() {
     console.error("[internships/page] fetchInternshipsWithCompany error:", error);
     return (
       <div className="container mx-auto py-12 text-red-600">
-        インターンデータの取得に失敗しました（詳細はサーバーログ参照）
+        インターンデータの取得に失敗しました
       </div>
     );
   }
