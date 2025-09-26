@@ -5,7 +5,7 @@ import { Internship } from "@/types";
 /**
  * internships + companies情報をJOINして取得するサーバー用関数
  */
-export async function fetchInternshipsWithCompany(): Promise<import("@/types").Internship[]> {
+export async function fetchInternshipsWithCompany(): Promise<import.Internship[]> {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('internships')
