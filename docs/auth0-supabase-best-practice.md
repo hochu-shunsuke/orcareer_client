@@ -5,7 +5,7 @@
 
 - Next.js App Router（app/ ディレクトリ構成）
 - @auth0/nextjs-auth0 v4
-- Supabase（usersテーブル: id(uuid), auth0_user_id(varchar, unique), email, last_login_at）
+- Supabase（usersテーブル: id(uuid), sub(varchar, unique), email, last_login_at）
 - **Pattern B: JWT統合方式** - Auth0のJWTをSupabaseで検証し、RLSを活用
 - サーバー側 onCallback フックで supabase upsert（Service Role Key 利用）
 - クライアント側は JWT をヘッダーに含めてSupabaseにアクセス
@@ -22,8 +22,8 @@
     auth0-upsert.ts の関数呼び出し
           ↓
     Supabase users テーブルに upsert（Service Role Key使用）
-    - auth0_user_id, email, display_name, avatar_url, last_login_at
-    - onConflict: 'auth0_user_id'
+    - sub, email, display_name, avatar_url, last_login_at
+    - onConflict: 'sub'
 ```
 
 ### 2. 通常のリクエスト時（毎回）
@@ -48,7 +48,7 @@
 CREATE TABLE users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_id SERIAL UNIQUE NOT NULL,
-  auth0_user_id varchar(255) UNIQUE NOT NULL,  -- Auth0のsub
+  sub varchar(255) UNIQUE NOT NULL,  -- Auth0のsub
   email varchar(255) UNIQUE NOT NULL,
   display_name varchar(255),
   avatar_url text,
@@ -59,7 +59,7 @@ CREATE TABLE users (
   deleted_at timestamptz
 );
 
-CREATE INDEX idx_users_auth0_user_id ON users (auth0_user_id);
+CREATE INDEX idx_users_sub ON users (sub);
 ```
 
 ## RLSポリシー設計
@@ -70,7 +70,7 @@ CREATE INDEX idx_users_auth0_user_id ON users (auth0_user_id);
 -- 自分のユーザー情報のみアクセス可能
 CREATE POLICY users_self_select ON users
   FOR SELECT 
-  USING (auth0_user_id = current_auth0_sub());
+  USING (sub = current_auth0_sub());
 
 -- 自分のお気に入りのみアクセス可能
 CREATE POLICY favorites_owner ON favorites
@@ -79,7 +79,7 @@ CREATE POLICY favorites_owner ON favorites
     EXISTS (
       SELECT 1 FROM users u 
       WHERE u.id = favorites.user_id 
-      AND u.auth0_user_id = current_auth0_sub()
+      AND u.sub = current_auth0_sub()
     )
   );
 ```
