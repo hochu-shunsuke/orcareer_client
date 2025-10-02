@@ -49,8 +49,6 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
         
         return; // エラーでもセッション継続のためthrowしない
       }
-      
-      console.log('Successfully updated user in Supabase:', auth0Sub);
     } else {
       // 新規ユーザーの作成（sub カラムを使用）
       const { error } = await supabase
@@ -79,8 +77,6 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
         
         return; // エラーでもセッション継続のためthrowしない
       }
-      
-      console.log('Successfully created user in Supabase:', auth0Sub);
     }
   } catch (error) {
     console.error('Error during user upsert:', error);
