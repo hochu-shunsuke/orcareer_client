@@ -6,9 +6,9 @@ import { Auth0Provider } from '@auth0/nextjs-auth0'
 import { auth0 } from '@/lib/auth0'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'オルキャリ',
+  description: '東海地方の新卒就活は、オルキャリ。企業・求人検索からインターンシップ応募まで。',
+  generator: 'Josho.inc',
 }
 
 export default async function RootLayout({
