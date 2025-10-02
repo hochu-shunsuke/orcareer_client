@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -63,20 +62,7 @@ export async function selectUserIdByAuth0Sub(auth0Sub: string) {
   return supabaseServerClient
     .from('users')
     .select('id')
-    .eq('auth0_user_id', auth0Sub)
+    .eq('sub', auth0Sub)
     .limit(1)
     .maybeSingle();
-}
-
-/**
- * NanoID-like generator (base62) for public_id. No external dependency.
- * Uses crypto.randomInt for uniform distribution without bias.
- */
-export function generatePublicId(size = 10): string {
-  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let id = '';
-  for (let i = 0; i < size; i++) {
-    id += alphabet[crypto.randomInt(alphabet.length)];
-  }
-  return id;
 }
