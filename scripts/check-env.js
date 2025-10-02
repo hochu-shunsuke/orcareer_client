@@ -57,5 +57,3 @@ if (process.env.AUTH0_DOMAIN && process.env.AUTH0_DOMAIN.match(/^https?:\/\//)) 
   console.error("Use only the host portion, e.g. your-tenant.us.auth0.com")
   process.exit(1)
 }
-
-console.log('[check-env] All required env vars present')
