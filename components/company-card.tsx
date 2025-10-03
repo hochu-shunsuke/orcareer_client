@@ -15,21 +15,21 @@ export function CompanyCard({ company }: CompanyCardProps) {
           {/* 最終更新：右上 */}
           <div className="absolute right-6 top-2 text-xs text-neutral-400 md:block hidden">最終更新: {company.updated_at ? new Date(company.updated_at).toLocaleDateString() : '不明'}</div>
           {/* 左カラム：企業ロゴ */}
-          <div className="w-48 h-48 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
+          <div className="w-56 h-56 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
             {company.logo_url && company.logo_url.trim() !== '' ? (
               <img
                 src={company.logo_url}
                 alt={`${company.name}のロゴ`}
-                width={192}
-                height={192}
+                width={224}
+                height={224}
                 className="object-contain"
               />
             ) : (
               <img
                 src={"/placeholder-logo.svg"}
                 alt="No Logo"
-                width={192}
-                height={192}
+                width={224}
+                height={224}
                 className="object-contain opacity-60"
               />
             )}

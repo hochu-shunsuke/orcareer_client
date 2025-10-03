@@ -21,21 +21,21 @@ export function InternshipCard({ internship, tags = [] }: InternshipCardProps) {
           </div>
           
           {/* 左カラム：企業ロゴ */}
-          <div className="w-48 h-48 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
+          <div className="w-56 h-56 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
             {internship.company && internship.company.logo_url ? (
               <img
                 src={internship.company.logo_url}
                 alt={`${internship.company.name}のロゴ`}
-                width={192}
-                height={192}
+                width={224}
+                height={224}
                 className="object-contain"
               />
             ) : (
               <img
                 src={"/placeholder-logo.svg"}
                 alt="No Logo"
-                width={192}
-                height={192}
+                width={224}
+                height={224}
                 className="object-contain opacity-60"
               />
             )}
@@ -52,10 +52,10 @@ export function InternshipCard({ internship, tags = [] }: InternshipCardProps) {
               </div>
             )}
             
-            {/* job_description（メインタイトル） */}
+            {/* title（メインタイトル） */}
             <div className="mb-2">
               <h2 className="text-2xl font-bold tracking-tight">
-                {internship.job_description || internship.title || 'インターン募集'}
+                {internship.title || internship.job_description || 'インターン募集'}
               </h2>
             </div>
             
