@@ -1,4 +1,12 @@
 // アプリ全体で使う型定義
+
+// 企業情報の軽量版（リレーション用）
+export interface CompanyBasicInfo {
+  id: string;
+  name: string;
+  logo_url: string | null;
+}
+
 // companiesテーブルの全カラムに準拠したCompany型
 export interface Company {
   id: string;
@@ -12,7 +20,7 @@ export interface Company {
   updated_at: string | null;
   deleted_at: string | null;
   // 企業に紐づく求人一覧
-  recruitments?: Job[];
+  recruitments?: Recruitment[];
   // 企業の業界・従業員数など（company_overviews）
   company_overviews?: {
     id: string;
@@ -38,8 +46,8 @@ export interface Company {
   };
 }
 
-// recruitmentsテーブルの全カラムに準拠したJob型
-export interface Job {
+// recruitmentsテーブルの全カラムに準拠したRecruitment型
+export interface Recruitment {
   id: string;
   company_id: string;
   job_type_id: string | null;
@@ -56,13 +64,12 @@ export interface Job {
   created_at: string | null;
   updated_at: string | null;
   // company情報は拡張で持つ
-  company?: {
-    id: string;
-    name: string;
-    logo_url: string;
-    // 必要に応じて他のプロパティも追加
-  };
+  company?: CompanyBasicInfo;
 }
+
+// 後方互換性のため、Job型をRecruitment型のエイリアスとして残す
+/** @deprecated Recruitmentを使用してください */
+export type Job = Recruitment;
 
 // internshipsテーブルの全カラムに準拠したInternship型
 export interface Internship {
@@ -82,11 +89,7 @@ export interface Internship {
   created_at: string | null;
   updated_at: string | null;
   // company情報は拡張で持つ
-  company?: {
-    id: string;
-    name: string;
-    logo_url: string;
-  };
+  company?: CompanyBasicInfo;
   // タグ情報（internship_tag_relationsから取得）
   tags?: InternshipTag[];
 }

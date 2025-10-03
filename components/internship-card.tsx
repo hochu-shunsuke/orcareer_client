@@ -1,9 +1,14 @@
-import { Card, CardContent } from "@/components/ui/card";
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Internship, InternshipTag } from "@/types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MapPin, Clock, DollarSign, Briefcase } from "lucide-react";
+import { ClickableCard } from "@/components/common/clickable-card";
+import { EntityLogo } from "@/components/common/entity-logo";
+import { UpdatedAtBadge } from "@/components/common/updated-at-badge";
 
 interface InternshipCardProps {
   internship: Internship;
@@ -11,35 +16,31 @@ interface InternshipCardProps {
 }
 
 export function InternshipCard({ internship, tags = [] }: InternshipCardProps) {
+  const router = useRouter();
+  const detailUrl = `/companies/${internship.company_id}/internships/${internship.id}`;
+  const companyUrl = `/companies/${internship.company_id}?tab=internship`;
+
+  const handleCardClick = () => {
+    router.push(detailUrl);
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 relative">
-      <CardContent className="p-6 pb-20">
-        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
-          {/* 最終更新：右上 */}
-          <div className="absolute right-6 top-2 text-xs text-neutral-400 md:block hidden">
-            最終更新: {internship.updated_at ? new Date(internship.updated_at).toLocaleDateString() : '不明'}
-          </div>
-          
-          {/* 左カラム：企業ロゴ */}
-          <div className="w-56 h-56 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
-            {internship.company && internship.company.logo_url ? (
-              <img
-                src={internship.company.logo_url}
-                alt={`${internship.company.name}のロゴ`}
-                width={224}
-                height={224}
-                className="object-contain"
-              />
-            ) : (
-              <img
-                src={"/placeholder-logo.svg"}
-                alt="No Logo"
-                width={224}
-                height={224}
-                className="object-contain opacity-60"
-              />
-            )}
-          </div>
+    <ClickableCard
+      onClick={handleCardClick}
+      ariaLabel={`${internship.title || 'インターン'}の詳細を見る`}
+    >
+      <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+        {/* 最終更新：右上 */}
+        <UpdatedAtBadge 
+          updatedAt={internship.updated_at} 
+          className="absolute right-6 top-2 md:block hidden"
+        />
+        
+        {/* 左カラム：企業ロゴ */}
+        <EntityLogo 
+          logoUrl={internship.company?.logo_url} 
+          entityName={internship.company?.name || 'インターン'}
+        />
           
           {/* 右カラム：情報・アクション */}
           <div className="flex-1 w-full">
@@ -110,24 +111,36 @@ export function InternshipCard({ internship, tags = [] }: InternshipCardProps) {
             </div>
             
             {/* スマホ時のみ下部に最終更新 */}
-            <div className="text-xs text-neutral-400 mt-2 text-right md:hidden">
-              最終更新: {internship.updated_at ? new Date(internship.updated_at).toLocaleDateString() : '不明'}
-            </div>
+            <UpdatedAtBadge 
+              updatedAt={internship.updated_at} 
+              className="mt-2 text-right md:hidden"
+            />
           </div>
         </div>
         
         {/* 右下ボタン配置 */}
         <div className="absolute right-6 bottom-4 flex gap-3">
-          <Button asChild size="sm">
-            <Link href={internship.company_id ? `/companies/${internship.company_id}` : '#'}>
+          <Button 
+            asChild 
+            size="sm"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+            }}
+          >
+            <Link href={companyUrl}>
               企業詳細
             </Link>
           </Button>
-          <Button size="sm" className="border-2 border-black text-black bg-white hover:bg-neutral-100 focus:ring-black">
+          <Button 
+            size="sm" 
+            className="border-2 border-black text-black bg-white hover:bg-neutral-100 focus:ring-black"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+            }}
+          >
             お気に入り登録
           </Button>
         </div>
-      </CardContent>
-    </Card>
+    </ClickableCard>
   );
 }
