@@ -1,87 +1,131 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Internship } from "@/types";
+import { Internship, InternshipTag } from "@/types";
 import Link from "next/link";
+import { MapPin, Clock, DollarSign, Briefcase } from "lucide-react";
 
 interface InternshipCardProps {
   internship: Internship;
+  tags?: InternshipTag[];
 }
 
-export function InternshipCard({ internship }: InternshipCardProps) {
+export function InternshipCard({ internship, tags = [] }: InternshipCardProps) {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
-      <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row gap-6">
-          {/* 左カラム：企業ロゴ（白背景＋最大幅固定） */}
-          <div className="sm:w-1/3 w-full h-48 flex-shrink-0 bg-white flex items-center justify-center rounded">
+    <Card className="hover:shadow-lg transition-shadow duration-200 relative">
+      <CardContent className="p-6 pb-20">
+        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+          {/* 最終更新：右上 */}
+          <div className="absolute right-6 top-2 text-xs text-neutral-400 md:block hidden">
+            最終更新: {internship.updated_at ? new Date(internship.updated_at).toLocaleDateString() : '不明'}
+          </div>
+          
+          {/* 左カラム：企業ロゴ */}
+          <div className="w-48 h-48 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
             {internship.company && internship.company.logo_url ? (
               <img
                 src={internship.company.logo_url}
                 alt={`${internship.company.name}のロゴ`}
-                width={200}
-                height={200}
+                width={192}
+                height={192}
                 className="object-contain"
               />
             ) : (
               <img
-                src={"/placeholder.svg"}
+                src={"/placeholder-logo.svg"}
                 alt="No Logo"
-                width={128}
-                height={128}
+                width={192}
+                height={192}
                 className="object-contain opacity-60"
               />
             )}
+          </div>
+          
+          {/* 右カラム：情報・アクション */}
+          <div className="flex-1 w-full">
+            {/* 会社名（小さく、トップ） */}
             {internship.company?.name && (
-              <h2 className="text-xl font-bold mb-2">{internship.company.name}</h2>
-            )}
-          </div>
-
-          {/* 右カラム */}
-          <div className="flex-1 flex flex-col justify-between">
-            <div>
-              {/* インターンタイトル */}
-              <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold">{internship.title ?? 'タイトル未設定'}</h2>
+              <div className="mb-2">
+                <span className="text-sm text-neutral-500 font-medium">
+                  {internship.company.name}
+                </span>
               </div>
-              {/* 職種説明 */}
-              <p className="text-sm text-muted-foreground mb-2">
-                {internship.job_type_description ?? '職種説明なし'}
-              </p>
-              {/* 業務内容 */}
-              <p className="text-sm text-muted-foreground mb-2">
-                {internship.job_description ?? '業務内容なし'}
-              </p>
-              {/* 勤務地・勤務時間 */}
-              <p className="text-sm text-muted-foreground mb-2">
-                勤務地: {internship.work_location ?? '未設定'} / 勤務時間: {internship.work_hours ?? '未設定'}
-              </p>
-              {/* 時給 */}
-              <p className="text-sm text-muted-foreground mb-2">
-                時給: {internship.hourly_wage ?? '未設定'}
-              </p>
-              {/* スキル */}
-              <p className="text-sm text-muted-foreground mb-2">
-                必須スキル: {internship.required_skills ?? '未設定'} / 歓迎スキル: {internship.preferred_skills ?? '未設定'}
-              </p>
-              {/* 選考フロー */}
-              <p className="text-sm text-muted-foreground mb-2">
-                選考フロー: {internship.selection_flow ?? '未設定'}
-              </p>
-              {/* 作成日 */}
-              <p className="text-xs text-gray-400 mb-2">
-                登録日: {internship.created_at ? new Date(internship.created_at).toLocaleDateString() : '不明'}
-              </p>
+            )}
+            
+            {/* job_description（メインタイトル） */}
+            <div className="mb-2">
+              <h2 className="text-2xl font-bold tracking-tight">
+                {internship.job_description || internship.title || 'インターン募集'}
+              </h2>
             </div>
-            {/* アクションボタン */}
-            <div className="flex gap-3 mt-4">
-              <Button asChild>
-                <Link href={internship.company_id ? `/companies/${internship.company_id}` : '#'}>企業詳細</Link>
-              </Button>
+            
+            {/* タグセクション */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {tags.map((tag) => (
+                  <Badge 
+                    key={tag.id} 
+                    variant="secondary" 
+                    className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                  >
+                    {tag.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {/* 詳細リスト（アイコン付き） */}
+            <div className="space-y-2 mb-4">
+              {/* job_type_description */}
+              {internship.job_type_description && (
+                <div className="flex items-center gap-2 text-sm text-neutral-700">
+                  <Briefcase className="w-4 h-4 text-neutral-500 flex-shrink-0" />
+                  <span>{internship.job_type_description}</span>
+                </div>
+              )}
+              
+              {/* hourly_wage */}
+              {internship.hourly_wage && (
+                <div className="flex items-center gap-2 text-sm text-neutral-700">
+                  <DollarSign className="w-4 h-4 text-neutral-500 flex-shrink-0" />
+                  <span>時給: {internship.hourly_wage}</span>
+                </div>
+              )}
+              
+              {/* work_hours */}
+              {internship.work_hours && (
+                <div className="flex items-center gap-2 text-sm text-neutral-700">
+                  <Clock className="w-4 h-4 text-neutral-500 flex-shrink-0" />
+                  <span>勤務時間: {internship.work_hours}</span>
+                </div>
+              )}
+              
+              {/* work_location */}
+              {internship.work_location && (
+                <div className="flex items-center gap-2 text-sm text-neutral-700">
+                  <MapPin className="w-4 h-4 text-neutral-500 flex-shrink-0" />
+                  <span>勤務地: {internship.work_location}</span>
+                </div>
+              )}
             </div>
-            {/* デバッグ用: 全プロパティJSON出力 */}
-            <pre className="text-xs mt-4 bg-gray-100 p-2 rounded overflow-x-auto">{JSON.stringify(internship, null, 2)}</pre>
+            
+            {/* スマホ時のみ下部に最終更新 */}
+            <div className="text-xs text-neutral-400 mt-2 text-right md:hidden">
+              最終更新: {internship.updated_at ? new Date(internship.updated_at).toLocaleDateString() : '不明'}
+            </div>
           </div>
+        </div>
+        
+        {/* 右下ボタン配置 */}
+        <div className="absolute right-6 bottom-4 flex gap-3">
+          <Button asChild size="sm">
+            <Link href={internship.company_id ? `/companies/${internship.company_id}` : '#'}>
+              企業詳細
+            </Link>
+          </Button>
+          <Button size="sm" className="border-2 border-black text-black bg-white hover:bg-neutral-100 focus:ring-black">
+            お気に入り登録
+          </Button>
         </div>
       </CardContent>
     </Card>
