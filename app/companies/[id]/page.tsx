@@ -15,6 +15,9 @@ import { notFound } from "next/navigation"
 import { InternshipCard } from "@/components/internship-card"
 import { RecruitmentCard } from "@/components/recruitment-card"
 
+// Next.js ISR設定: 15分間キャッシュ（企業詳細ページ）
+export const revalidate = 900;
+
 interface CompanyDetailPageProps {
   params: { id: string }
   searchParams: { tab?: string }

@@ -12,16 +12,18 @@ export async function middleware(request: NextRequest) {
     const mod = await import("./lib/auth0");
     const { auth0 } = mod;
     return await auth0.middleware(request);
-  } catch (err: unknown) {
-    // Log error for Vercel logs so we can inspect cause of middleware failure.
-    // Avoid printing secrets — print only message/stack if available.
-    const errMsg = err && typeof err === 'object' && 'message' in err ? (err as any).message : String(err);
-    const errStack = err && typeof err === 'object' && 'stack' in err ? (err as any).stack : undefined;
-    // eslint-disable-next-line no-console
-    console.error('[middleware] failed to initialize auth0:', errMsg, errStack ? `\n${errStack}` : '');
-    // Allow request to continue instead of returning a generic 500 so the site
-    // stays reachable while debugging. This means protected routes may not
-    // enforce auth until the root cause is fixed.
+    } catch (err) {
+      const errMsg = err && typeof err === 'object' && 'message' in err ? err.message : String(err);
+      const errStack = err && typeof err === 'object' && 'stack' in err ? err.stack : undefined;
+      
+      // Logger利用可能時は構造化ログ、失敗時はconsole.errorでフォールバック
+      try {
+        const { logger } = await import("./lib/logger");
+        logger.error('[middleware] failed to initialize auth0:', err as Error);
+      } catch {
+        console.error('[middleware] failed to initialize auth0:', errMsg, errStack ? `\n${errStack}` : '');
+      }
+      // 認証失敗でもサイトアクセス可能に保つ（デバッグ用）
     return NextResponse.next();
   }
 }
