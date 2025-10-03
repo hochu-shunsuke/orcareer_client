@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "マイページ - オルキャリ",
 };
 
+// ユーザー個別ページ: 動的レンダリング（個人データのためキャッシュしない）
+export const revalidate = 0;
+
 
 export default async function UserPage() {
   // サーバー側でAuth0セッション取得

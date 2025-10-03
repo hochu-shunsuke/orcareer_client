@@ -1,12 +1,13 @@
 import { auth0 } from './auth0';
 import { createServerSupabaseClient } from './supabase-server';
+import { logger } from './logger';
 
 /**
  * Auth0ユーザーをSupabaseにupsertする最小実装
  */
 export async function upsertUserToSupabase(auth0Sub: string, email: string, name?: string, picture?: string): Promise<void> {
   if (!auth0Sub || !email) {
-    console.warn('Missing required user data, skipping upsert');
+    logger.warn('Missing required user data, skipping upsert', 'auth0-upsert', { auth0Sub: !!auth0Sub, email: !!email });
     return;
   }
 
@@ -34,19 +35,7 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
         .eq('id', existingUser.id);
 
       if (error) {
-        // 構造化ログで詳細なエラー情報を記録
-        console.error('Failed to update existing user:', {
-          auth0_sub: auth0Sub,
-          email,
-          error_code: error.code,
-          error_message: error.message,
-          error_details: error.details,
-          timestamp: new Date().toISOString()
-        });
-        
-        // TODO: 本番環境では外部ログサービス（Sentry, CloudWatch等）に送信
-        // await logError('auth0_user_update_failed', { auth0Sub, email, error });
-        
+        logger.dbError('updateExistingUser', error, `UPDATE users WHERE id=${existingUser.id}`);
         return; // エラーでもセッション継続のためthrowしない
       }
     } else {
@@ -62,24 +51,12 @@ export async function upsertUserToSupabase(auth0Sub: string, email: string, name
         });
 
       if (error) {
-        // 構造化ログで詳細なエラー情報を記録
-        console.error('Failed to create new user:', {
-          auth0_sub: auth0Sub,
-          email,
-          error_code: error.code,
-          error_message: error.message,
-          error_details: error.details,
-          timestamp: new Date().toISOString()
-        });
-        
-        // TODO: 本番環境では外部ログサービス（Sentry, CloudWatch等）に送信
-        // await logError('auth0_user_creation_failed', { auth0Sub, email, error });
-        
+        logger.dbError('createNewUser', error, 'INSERT INTO users');
         return; // エラーでもセッション継続のためthrowしない
       }
     }
   } catch (error) {
-    console.error('Error during user upsert:', error);
+    logger.error('Error during user upsert', error as Error, 'auth0-upsert', { auth0Sub, email });
     // セッション継続のためthrowしない
   }
 }
@@ -91,14 +68,14 @@ export async function syncCurrentUserToSupabase(): Promise<void> {
   const session = await auth0.getSession();
   
   if (!session?.user) {
-    console.warn('No active Auth0 session found');
+    logger.warn('No active Auth0 session found', 'auth0-sync');
     return;
   }
 
   const { sub, email, name, picture } = session.user;
   
   if (!sub || !email) {
-    console.warn('Auth0 user missing required fields');
+    logger.warn('Auth0 user missing required fields', 'auth0-sync', { sub: !!sub, email: !!email });
     return;
   }
 
