@@ -87,4 +87,14 @@ export interface Internship {
     name: string;
     logo_url: string;
   };
+  // タグ情報（internship_tag_relationsから取得）
+  tags?: InternshipTag[];
+}
+
+// internship_tagsテーブルに準拠したInternshipTag型
+export interface InternshipTag {
+  id: string;
+  name: string;
+  category?: string | null;
+  created_at?: string | null;
 }

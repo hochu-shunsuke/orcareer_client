@@ -10,14 +10,14 @@ import { EventInfo } from "@/components/event-info";
 import { SearchHero } from "@/components/search-hero";
 import { NavigationBar } from "@/components/navigation-bar";
 import { Footer } from "@/components/footer";
-import { fetchInternshipsWithCompany } from "@/lib/fetch-internships";
+import { fetchInternshipsWithCompanyAndTags } from "@/lib/fetch-internships";
 
 // 💡 修正: 非同期コンポーネントとして export default を追加
 export default async function InternshipPage() {
   let internships: any[] = [];
   try {
     // 💡 修正: try-catchブロック内で await を使用
-    internships = await fetchInternshipsWithCompany();
+    internships = await fetchInternshipsWithCompanyAndTags();
   } catch (error) {
     console.error("[internships/page] fetchInternshipsWithCompany error:", error);
     return (
@@ -79,7 +79,11 @@ export default async function InternshipPage() {
             {internships.length > 0 ? (
               <div className="space-y-6">
                 {internships.map((internship) => (
-                  <InternshipCard key={internship.id} internship={internship} />
+                  <InternshipCard 
+                    key={internship.id} 
+                    internship={internship} 
+                    tags={internship.tags || []} 
+                  />
                 ))}
               </div>
             ) : (
