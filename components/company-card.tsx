@@ -13,7 +13,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
       <CardContent className="p-6 pb-20">
         <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
           {/* 最終更新：右上 */}
-          <div className="absolute right-6 top-6 text-xs text-neutral-400 md:block hidden">最終更新: {company.updated_at ? new Date(company.updated_at).toLocaleDateString() : '不明'}</div>
+          <div className="absolute right-6 top-2 text-xs text-neutral-400 md:block hidden">最終更新: {company.updated_at ? new Date(company.updated_at).toLocaleDateString() : '不明'}</div>
           {/* 左カラム：企業ロゴ */}
           <div className="w-48 h-48 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
             {company.logo_url && company.logo_url.trim() !== '' ? (
@@ -77,7 +77,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
           </div>
         </div>
         {/* 右下ボタン配置 */}
-        <div className="absolute right-6 bottom-6 flex gap-3">
+        <div className="absolute right-6 bottom-4 flex gap-3">
           <Button asChild size="sm">
             <Link href={`/companies/${company.id}`}>企業詳細</Link>
           </Button>
