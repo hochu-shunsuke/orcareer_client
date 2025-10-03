@@ -13,14 +13,15 @@ import { fetchInternshipById } from "@/lib/fetch-internships"
 export const revalidate = 600;
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
     internshipId: string
-  }
+  }>
 }
 
 export default async function InternshipDetailPage({ params }: PageProps) {
-  const internship = await fetchInternshipById(params.internshipId)
+  const { id, internshipId } = await params
+  const internship = await fetchInternshipById(internshipId)
 
   if (!internship || !internship.company) {
     notFound()
@@ -38,7 +39,7 @@ export default async function InternshipDetailPage({ params }: PageProps) {
           </Link>
           <span>/</span>
           <Link 
-            href={`/companies/${params.id}?tab=internship`} 
+            href={`/companies/${id}?tab=internship`} 
             className="hover:text-gray-900"
           >
             {internship.company.name}
@@ -145,7 +146,7 @@ export default async function InternshipDetailPage({ params }: PageProps) {
                     variant="outline"
                     className="border-2"
                   >
-                    <Link href={`/companies/${params.id}?tab=company-info`}>
+                    <Link href={`/companies/${id}?tab=company-info`}>
                       <Building2 className="w-4 h-4 mr-2" />
                       この企業について
                     </Link>
@@ -242,13 +243,13 @@ export default async function InternshipDetailPage({ params }: PageProps) {
               <Separator />
               <div className="flex gap-3">
                 <Button asChild variant="outline" className="flex-1">
-                  <Link href={`/companies/${params.id}?tab=internship`}>
+                  <Link href={`/companies/${id}?tab=internship`}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     他のインターンを見る
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
-                  <Link href={`/companies/${params.id}?tab=company-info`}>
+                  <Link href={`/companies/${id}?tab=company-info`}>
                     <Building2 className="w-4 h-4 mr-2" />
                     企業情報を見る
                   </Link>

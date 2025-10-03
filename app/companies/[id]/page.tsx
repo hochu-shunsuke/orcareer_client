@@ -19,16 +19,18 @@ import { RecruitmentCard } from "@/components/recruitment-card"
 export const revalidate = 900;
 
 interface CompanyDetailPageProps {
-  params: { id: string }
-  searchParams: { tab?: string }
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
 }
 
 export default async function CompanyDetailPage({ params, searchParams }: CompanyDetailPageProps) {
-  const defaultTab = searchParams.tab || "company-info"
+  const { id } = await params
+  const { tab } = await searchParams
+  const defaultTab = tab || "company-info"
   const [company, internships, recruitments] = await Promise.all([
-    fetchCompanyById(params.id),
-    fetchInternshipsByCompanyId(params.id),
-    fetchRecruitmentsByCompanyId(params.id)
+    fetchCompanyById(id),
+    fetchInternshipsByCompanyId(id),
+    fetchRecruitmentsByCompanyId(id)
   ])
 
   if (!company) {

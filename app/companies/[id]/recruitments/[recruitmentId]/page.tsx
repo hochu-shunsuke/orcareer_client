@@ -12,14 +12,15 @@ import { fetchRecruitmentById } from "@/lib/fetch-recruitments"
 export const revalidate = 600;
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
     recruitmentId: string
-  }
+  }>
 }
 
 export default async function RecruitmentDetailPage({ params }: PageProps) {
-  const recruitment = await fetchRecruitmentById(params.recruitmentId)
+  const { id, recruitmentId } = await params
+  const recruitment = await fetchRecruitmentById(recruitmentId)
 
   if (!recruitment || !recruitment.company) {
     notFound()
@@ -33,14 +34,14 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
         {/* パンくずリスト */}
         <nav className="mb-6 flex items-center gap-2 text-sm text-gray-600">
           <Link 
-            href={`/companies/${params.id}`} 
+            href={`/companies/${id}`} 
             className="hover:text-gray-900"
           >
             {recruitment.company.name}
           </Link>
           <span>/</span>
           <Link 
-            href={`/companies/${params.id}?tab=job`} 
+            href={`/companies/${id}?tab=job`} 
             className="hover:text-gray-900"
           >
             本選考
@@ -139,7 +140,7 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
                     variant="outline"
                     className="border-2"
                   >
-                    <Link href={`/companies/${params.id}?tab=company-info`}>
+                    <Link href={`/companies/${id}?tab=company-info`}>
                       <Building2 className="w-4 h-4 mr-2" />
                       この企業について
                     </Link>

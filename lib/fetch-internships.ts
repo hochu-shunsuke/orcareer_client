@@ -8,44 +8,40 @@ import { unstable_cache } from 'next/cache';
  * 複数のインターンシップのタグを一括取得（N+1問題の解消）
  * 内部ヘルパー関数 - 親関数がキャッシュを管理するため、ここではキャッシュしない
  */
-async function fetchInternshipTagsBulk(internshipIds: string[]): Promise<Map<string, InternshipTag[]>> {
-  return await measurePerformance('fetchInternshipTagsBulk', async () => {
-    if (internshipIds.length === 0) {
-      return new Map();
+export async function fetchInternshipTagsBulk(internshipIds: string[]): Promise<Map<string, InternshipTag[]>> {
+  if (internshipIds.length === 0) return new Map();
+
+  const supabase = createSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('internship_tag_relations')
+    .select(`
+      internship_id,
+      tag:internship_tags (
+        id,
+        name,
+        category
+      )
+    `)
+    .in('internship_id', internshipIds);
+  
+  if (error) {
+    logDbError('fetchInternshipTagsBulk', error, `SELECT internship_tag_relations WHERE internship_id IN (${internshipIds.length} items)`);
+    return new Map();
+  }
+
+  // internship_id ごとにタグをグループ化
+  const tagsByInternshipId = new Map<string, InternshipTag[]>();
+  
+  (data ?? []).forEach((item: any) => {
+    if (item.tag && item.internship_id) {
+      const tags = tagsByInternshipId.get(item.internship_id) || [];
+      tags.push(item.tag);
+      tagsByInternshipId.set(item.internship_id, tags);
     }
-
-    const supabase = createSupabaseClient();
-    
-    const { data, error } = await supabase
-      .from('internship_tag_relations')
-      .select(`
-        internship_id,
-        tag:internship_tags (
-          id,
-          name,
-          category
-        )
-      `)
-      .in('internship_id', internshipIds);
-    
-    if (error) {
-      logDbError('fetchInternshipTagsBulk', error, `SELECT internship_tag_relations WHERE internship_id IN (${internshipIds.length} items)`);
-      return new Map();
-    }
-
-    // internship_id ごとにタグをグループ化
-    const tagsByInternshipId = new Map<string, InternshipTag[]>();
-    
-    (data ?? []).forEach((item: any) => {
-      if (item.tag && item.internship_id) {
-        const tags = tagsByInternshipId.get(item.internship_id) || [];
-        tags.push(item.tag);
-        tagsByInternshipId.set(item.internship_id, tags);
-      }
-    });
-
-    return tagsByInternshipId;
   });
+
+  return tagsByInternshipId;
 }
 
 /**
@@ -101,37 +97,35 @@ export const fetchInternshipsWithCompanyAndTags = unstable_cache(
  * 特定のインターンシップのタグを取得
  */
 export async function fetchInternshipTags(internshipId: string): Promise<InternshipTag[]> {
-  return await measurePerformance('fetchInternshipTags', async () => {
-    return await unstable_cache(
-      async () => {
-        const supabase = createSupabaseClient();
-        
-        const { data, error } = await supabase
-          .from('internship_tag_relations')
-          .select(`
-            tag:internship_tags (
-              id,
-              name,
-              category
-            )
-          `)
-          .eq('internship_id', internshipId);
-        
-        if (error) {
-          logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
-          return [];
-        }
-        
-        // tag情報を展開
-        return (data ?? []).map((item: any) => item.tag).filter(Boolean);
-      },
-      [`internship-tags-${internshipId}`],
-      {
-        tags: [`internship-tags-${internshipId}`],
-        revalidate: 900 // 15分間キャッシュ（タグ情報は比較的静的）
+  return await unstable_cache(
+    async () => {
+      const supabase = createSupabaseClient();
+      
+      const { data, error } = await supabase
+        .from('internship_tag_relations')
+        .select(`
+          tag:internship_tags (
+            id,
+            name,
+            category
+          )
+        `)
+        .eq('internship_id', internshipId);
+      
+      if (error) {
+        logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
+        return [];
       }
-    )();
-  });
+      
+      // tag情報を展開
+      return (data ?? []).map((item: any) => item.tag).filter(Boolean);
+    },
+    [`internship-tags-${internshipId}`],
+    {
+      tags: [`internship-tags-${internshipId}`],
+      revalidate: 900 // 15分間キャッシュ（タグ情報は比較的静的）
+    }
+  )();
 }
 
 /**
