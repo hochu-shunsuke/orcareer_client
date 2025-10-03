@@ -12,17 +12,16 @@ export async function middleware(request: NextRequest) {
     const mod = await import("./lib/auth0");
     const { auth0 } = mod;
     return await auth0.middleware(request);
-    } catch (err) {
-      const errMsg = err && typeof err === 'object' && 'message' in err ? err.message : String(err);
-      const errStack = err && typeof err === 'object' && 'stack' in err ? err.stack : undefined;
-      
-      // Logger利用可能時は構造化ログ、失敗時はconsole.errorでフォールバック
-      try {
-        const { logger } = await import("./lib/logger");
-        logger.error('[middleware] failed to initialize auth0:', err as Error);
-      } catch {
-        console.error('[middleware] failed to initialize auth0:', errMsg, errStack ? `\n${errStack}` : '');
-      }
+  } catch (err) {
+    // Logger利用可能時は構造化ログ、失敗時はconsole.errorでフォールバック
+    try {
+      const { logger } = await import("./lib/logger");
+      logger.error('[middleware] failed to initialize auth0:', err as Error);
+    } catch {
+      // Loggerが使えない場合のフォールバック
+      const error = err as Error;
+      console.error('[middleware] failed to initialize auth0:', error.message, error.stack ? `\n${error.stack}` : '');
+    }
       // 認証失敗でもサイトアクセス可能に保つ（デバッグ用）
     return NextResponse.next();
   }
