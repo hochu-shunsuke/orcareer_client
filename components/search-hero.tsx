@@ -1,4 +1,3 @@
-import { Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,8 +11,6 @@ interface SearchField {
 }
 
 interface SearchHeroProps {
-  title: string
-  subtitle: string
   searchTitle: string
   keywordPlaceholder: string
   fields: SearchField[]
@@ -28,23 +25,17 @@ const areaOptions = [
 ]
 
 export function SearchHero({
-  title,
-  subtitle,
   searchTitle,
   keywordPlaceholder,
   fields,
   onSearch
 }: SearchHeroProps) {
   return (
-    <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-12">
+    <section className="py-12 bg-transparent">
       <div className="container mx-auto px-4 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">{title}</h1>
-        <p className="text-lg md:text-xl mb-8">{subtitle}</p>
-        
-        <Card className="max-w-4xl mx-auto">
+        <Card className="max-w-4xl mx-auto border-4 border-orange-600 shadow-lg bg-white">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
+            <CardTitle className="text-center text-black">
               {searchTitle}
             </CardTitle>
           </CardHeader>
@@ -52,20 +43,20 @@ export function SearchHero({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* キーワード入力フィールド */}
               <div>
-                <label className="text-sm font-medium mb-2 block">キーワード</label>
-                <Input placeholder={keywordPlaceholder} />
+                <label className="text-sm font-medium mb-2 block text-black">キーワード</label>
+                <Input placeholder={keywordPlaceholder} className="text-black" />
               </div>
 
               {/* エリア選択フィールド */}
               <div>
-                <label className="text-sm font-medium mb-2 block">エリア</label>
+                <label className="text-sm font-medium mb-2 block text-black">エリア</label>
                 <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="エリアを選択" />
+                  <SelectTrigger className="text-black border-gray-300">
+                    <SelectValue placeholder="エリアを選択" className="text-black" />
                   </SelectTrigger>
                   <SelectContent>
                     {areaOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.value} value={option.value} className="text-black">
                         {option.label}
                       </SelectItem>
                     ))}
@@ -76,17 +67,17 @@ export function SearchHero({
               {/* 追加フィールド */}
               {fields.map((field, index) => (
                 <div key={index}>
-                  <label className="text-sm font-medium mb-2 block">{field.label}</label>
+                  <label className="text-sm font-medium mb-2 block text-black">{field.label}</label>
                   {field.type === 'input' ? (
-                    <Input placeholder={field.placeholder} />
+                    <Input placeholder={field.placeholder} className="text-black" />
                   ) : (
                     <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder={field.placeholder} />
+                      <SelectTrigger className="text-black border-gray-300">
+                        <SelectValue placeholder={field.placeholder} className="text-black" />
                       </SelectTrigger>
                       <SelectContent>
                         {field.options?.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
+                          <SelectItem key={option.value} value={option.value} className="text-black">
                             {option.label}
                           </SelectItem>
                         ))}
@@ -99,7 +90,7 @@ export function SearchHero({
               {/* 検索ボタン */}
               <div className="sm:col-span-2 lg:col-span-1 flex items-end">
                 <Button 
-                  className="w-full bg-orange-600 hover:bg-orange-700"
+                  className="w-full bg-orange-600 text-white border-2 border-orange-600 shadow-md hover:bg-orange-700 hover:text-white"
                   onClick={onSearch}
                 >
                   検索する

@@ -45,8 +45,6 @@ export default async function CompaniesPage() {
       <NavigationBar currentPage="companies" />
 
       <SearchHero
-        title="東海地方の企業を探す"
-        subtitle="理想の企業と出会って未来を築こう"
         searchTitle="企業を検索"
         keywordPlaceholder="企業名、業界など"
         fields={[industryField]}

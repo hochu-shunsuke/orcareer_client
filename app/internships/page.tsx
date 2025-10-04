@@ -47,8 +47,6 @@ export default async function InternshipPage() {
       <NavigationBar currentPage="internships" />
 
       <SearchHero
-        title="東海地方のインターンシップを探す"
-        subtitle="実践的な経験で将来のキャリアを築こう"
         searchTitle="インターンシップを検索"
         keywordPlaceholder="職種、企業名など"
         fields={[durationField]}
@@ -97,28 +95,6 @@ export default async function InternshipPage() {
 
           {/* Sidebar */}
           <div className="w-full lg:w-80 order-2 lg:order-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>詳細検索</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">給与</label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="paid" />
-                      <label htmlFor="paid" className="text-sm">有給</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="unpaid" />
-                      <label htmlFor="unpaid" className="text-sm">無給</label>
-                    </div>
-                  </div>
-                </div>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">絞り込む</Button>
-              </CardContent>
-            </Card>
-
             <StudentArticles />
             <EventInfo />
           </div>
