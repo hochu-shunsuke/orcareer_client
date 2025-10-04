@@ -51,17 +51,18 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
   const filteredInternships = useMemo(() => {
     let result = [...initialInternships]
 
-    // キーワード検索
+    // キーワード検索（タイトル、企業名、職種説明、業務内容で検索）
     if (searchParams.keyword) {
       const keyword = searchParams.keyword.toLowerCase()
       result = result.filter(internship => 
         internship.title?.toLowerCase().includes(keyword) ||
         internship.company?.name.toLowerCase().includes(keyword) ||
-        internship.job_type_description?.toLowerCase().includes(keyword)
+        internship.job_type_description?.toLowerCase().includes(keyword) ||
+        internship.job_description?.toLowerCase().includes(keyword)
       )
     }
 
-    // エリアフィルタ
+    // エリアフィルタ（勤務地で絞り込み）
     if (searchParams.area && searchParams.area !== 'all') {
       result = result.filter(internship => {
         const location = internship.work_location || ''
@@ -95,17 +96,17 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
   }, [initialInternships, searchParams])
 
   return (
-    <>
+    <div className="container mx-auto px-4 py-8">
       <SearchHero
-        searchTitle="インターンシップを検索"
         keywordPlaceholder="職種、企業名など"
         industryOptions={industryOptions}
         jobTypeOptions={jobTypeOptions}
         searchParams={searchParams}
         onSearchChange={handleSearchChange}
+        resultCount={filteredInternships.length}
       />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
           <div className="flex-1 order-1 lg:order-1">
@@ -157,6 +158,6 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

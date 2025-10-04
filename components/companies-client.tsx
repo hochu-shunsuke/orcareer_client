@@ -52,20 +52,23 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
   const filteredCompanies = useMemo(() => {
     let result = [...initialCompanies]
 
-    // キーワード検索
+    // キーワード検索（企業名、カナ、プロフィール、事業内容で検索）
     if (searchParams.keyword) {
       const keyword = searchParams.keyword.toLowerCase()
       result = result.filter(company => 
         company.name.toLowerCase().includes(keyword) ||
-        company.name_kana?.toLowerCase().includes(keyword)
+        company.name_kana?.toLowerCase().includes(keyword) ||
+        company.company_data?.profile?.toLowerCase().includes(keyword) ||
+        company.company_data?.business_content?.toLowerCase().includes(keyword)
       )
     }
 
-    // エリアフィルタ
+    // エリアフィルタ（本社所在地で絞り込み）
     if (searchParams.area && searchParams.area !== 'all') {
       result = result.filter(company => {
-        const location = company.company_overviews?.headquarters_address || company.company_data?.headquarters_location || ''
-        return location.includes(searchParams.area)
+        const headquarters = company.company_overviews?.headquarters_address || 
+                           company.company_data?.headquarters_location || ''
+        return headquarters.includes(searchParams.area)
       })
     }
 
@@ -95,17 +98,17 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
   }, [initialCompanies, searchParams])
 
   return (
-    <>
+    <div className="container mx-auto px-4 py-8">
       <SearchHero
-        searchTitle="企業を検索"
         keywordPlaceholder="企業名、業界など"
         industryOptions={industryOptions}
         jobTypeOptions={jobTypeOptions}
         searchParams={searchParams}
         onSearchChange={handleSearchChange}
+        resultCount={filteredCompanies.length}
       />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
           <div className="flex-1 order-1 lg:order-1">
@@ -155,6 +158,6 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
