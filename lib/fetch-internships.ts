@@ -95,31 +95,37 @@ export const fetchInternshipsWithCompanyAndTags = unstable_cache(
 
 /**
  * 特定のインターンシップのタグを取得
+ * 内部ヘルパー関数 - 親関数がキャッシュを管理するため、ここではキャッシュしない
+ */
+async function fetchInternshipTagsInternal(internshipId: string): Promise<InternshipTag[]> {
+  const supabase = createSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('internship_tag_relations')
+    .select(`
+      tag:internship_tags (
+        id,
+        name,
+        category
+      )
+    `)
+    .eq('internship_id', internshipId);
+  
+  if (error) {
+    logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
+    return [];
+  }
+  
+  // tag情報を展開
+  return (data ?? []).map((item: any) => item.tag).filter(Boolean);
+}
+
+/**
+ * 特定のインターンシップのタグを取得（キャッシュ付き単体利用向け）
  */
 export async function fetchInternshipTags(internshipId: string): Promise<InternshipTag[]> {
   return await unstable_cache(
-    async () => {
-      const supabase = createSupabaseClient();
-      
-      const { data, error } = await supabase
-        .from('internship_tag_relations')
-        .select(`
-          tag:internship_tags (
-            id,
-            name,
-            category
-          )
-        `)
-        .eq('internship_id', internshipId);
-      
-      if (error) {
-        logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
-        return [];
-      }
-      
-      // tag情報を展開
-      return (data ?? []).map((item: any) => item.tag).filter(Boolean);
-    },
+    () => fetchInternshipTagsInternal(internshipId),
     [`internship-tags-${internshipId}`],
     {
       tags: [`internship-tags-${internshipId}`],
@@ -149,8 +155,8 @@ const _fetchInternshipById = async (internshipId: string): Promise<Internship | 
     
     if (!internship) return null;
     
-    // タグを取得
-    const tags = await fetchInternshipTags(internshipId);
+    // タグを取得（内部関数を使用してキャッシュの二重化を防ぐ）
+    const tags = await fetchInternshipTagsInternal(internshipId);
     
     return {
       ...internship,
