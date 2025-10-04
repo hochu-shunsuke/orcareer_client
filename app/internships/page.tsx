@@ -11,6 +11,10 @@ import { SearchHero } from "@/components/search-hero";
 import { NavigationBar } from "@/components/navigation-bar";
 import { Footer } from "@/components/footer";
 import { fetchInternshipsWithCompanyAndTags } from "@/lib/fetch-internships";
+import { logger } from "@/lib/logger";
+
+// Next.js ISR設定: 3分間キャッシュでパフォーマンス向上
+export const revalidate = 180;
 
 // 💡 修正: 非同期コンポーネントとして export default を追加
 export default async function InternshipPage() {
@@ -19,7 +23,7 @@ export default async function InternshipPage() {
     // 💡 修正: try-catchブロック内で await を使用
     internships = await fetchInternshipsWithCompanyAndTags();
   } catch (error) {
-    console.error("[internships/page] fetchInternshipsWithCompany error:", error);
+    logger.error('Failed to fetch internships with company and tags', error as Error, 'internships-page');
     return (
       <div className="container mx-auto py-12 text-red-600">
         インターンデータの取得に失敗しました

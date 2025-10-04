@@ -12,6 +12,10 @@ import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
 import { fetchCompaniesWithRecruitments } from "@/lib/fetch-companies"
 import { Company } from "@/types"
+import { logger } from "@/lib/logger"
+
+// Next.js ISR設定: 5分間キャッシュでパフォーマンス向上
+export const revalidate = 300;
 
 // export default async を追加して、コンポーネント関数を定義
 export default async function CompaniesPage() {
@@ -19,7 +23,7 @@ export default async function CompaniesPage() {
   try {
     companies = await fetchCompaniesWithRecruitments();
   } catch (error) {
-    console.error('[companies/page] fetchCompaniesWithRecruitments error:', error);
+    logger.error('Failed to fetch companies with recruitments', error as Error, 'companies-page');
     return <div className="container mx-auto py-12 text-red-600">企業データの取得に失敗しました</div>;
   }
 
