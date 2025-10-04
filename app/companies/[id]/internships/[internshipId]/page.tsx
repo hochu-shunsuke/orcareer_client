@@ -10,8 +10,6 @@ import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
 import { fetchInternshipById } from "@/lib/fetch-internships"
 
-// Next.js ISR設定: 10分間キャッシュ（インターン詳細ページ）
-export const revalidate = 600;
 
 interface PageProps {
   params: Promise<{

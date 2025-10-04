@@ -14,8 +14,6 @@ import { fetchCompaniesWithRecruitments } from "@/lib/fetch-companies"
 import { Company } from "@/types"
 import { logger } from "@/lib/logger"
 
-// Next.js ISR設定: 5分間キャッシュでパフォーマンス向上
-export const revalidate = 300;
 
 // export default async を追加して、コンポーネント関数を定義
 export default async function CompaniesPage() {
