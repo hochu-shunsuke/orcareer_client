@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { MapPin, Clock, DollarSign, Briefcase, Building2, Users, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -59,7 +60,7 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
               {/* 企業ロゴ */}
               <div className="w-56 h-56 flex-shrink-0 bg-white flex items-center justify-center rounded mx-auto md:mx-0">
                 {recruitment.company.logo_url ? (
-                  <img
+                  <Image
                     src={recruitment.company.logo_url}
                     alt={`${recruitment.company.name}のロゴ`}
                     width={224}
@@ -67,7 +68,7 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
                     className="object-contain"
                   />
                 ) : (
-                  <img
+                  <Image
                     src="/placeholder-logo.svg"
                     alt="No Logo"
                     width={224}
