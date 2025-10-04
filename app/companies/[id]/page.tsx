@@ -15,8 +15,6 @@ import { notFound } from "next/navigation"
 import { InternshipCard } from "@/components/internship-card"
 import { RecruitmentCard } from "@/components/recruitment-card"
 
-// Next.js ISR設定: 12時間キャッシュ
-export const revalidate = 43200;
 
 interface CompanyDetailPageProps {
   params: Promise<{ id: string }>

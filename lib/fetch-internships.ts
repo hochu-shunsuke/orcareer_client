@@ -1,55 +1,14 @@
-
 import { createSupabaseClient } from "@/lib/supabase-client";
 import { Internship, InternshipTag } from "@/types";
 import { logDbError, measurePerformance } from "@/lib/logger";
 import { unstable_cache } from 'next/cache';
 
 /**
- * 複数のインターンシップのタグを一括取得（N+1問題の解消）
- * 内部ヘルパー関数 - 親関数がキャッシュを管理するため、ここではキャッシュしない
- */
-export async function fetchInternshipTagsBulk(internshipIds: string[]): Promise<Map<string, InternshipTag[]>> {
-  if (internshipIds.length === 0) return new Map();
-
-  const supabase = createSupabaseClient();
-  
-  const { data, error } = await supabase
-    .from('internship_tag_relations')
-    .select(`
-      internship_id,
-      tag:internship_tags (
-        id,
-        name,
-        category
-      )
-    `)
-    .in('internship_id', internshipIds);
-  
-  if (error) {
-    logDbError('fetchInternshipTagsBulk', error, `SELECT internship_tag_relations WHERE internship_id IN (${internshipIds.length} items)`);
-    return new Map();
-  }
-
-  // internship_id ごとにタグをグループ化
-  const tagsByInternshipId = new Map<string, InternshipTag[]>();
-  
-  (data ?? []).forEach((item: any) => {
-    if (item.tag && item.internship_id) {
-      const tags = tagsByInternshipId.get(item.internship_id) || [];
-      tags.push(item.tag);
-      tagsByInternshipId.set(item.internship_id, tags);
-    }
-  });
-
-  return tagsByInternshipId;
-}
-
-/**
- * internships + companies + tags情報をJOINして取得するサーバー用関数
+ * internships + companies + tags情報をJOINして取得
  * タグは一括取得してN+1問題を解消
- * キャッシュ: 3分間（インターンデータは比較的頻繁に更新）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchInternshipsWithCompanyAndTags = async (): Promise<Internship[]> => {
+async function _fetchInternshipsWithCompanyAndTags(): Promise<Internship[]> {
   return measurePerformance('fetchInternshipsWithCompanyAndTags', async () => {
     const supabase = createSupabaseClient();
     
@@ -74,7 +33,32 @@ const _fetchInternshipsWithCompanyAndTags = async (): Promise<Internship[]> => {
     const internshipIds = validInternships.map((i: any) => i.id);
     
     // タグを一括取得
-    const tagsByInternshipId = await fetchInternshipTagsBulk(internshipIds);
+    const { data: tagData, error: tagError } = await supabase
+      .from('internship_tag_relations')
+      .select(`
+        internship_id,
+        tag:internship_tags (
+          id,
+          name,
+          category
+        )
+      `)
+      .in('internship_id', internshipIds);
+    
+    if (tagError) {
+      logDbError('fetchInternshipTagsBulk', tagError, `SELECT internship_tag_relations WHERE internship_id IN (${internshipIds.length} items)`);
+    }
+
+    // internship_id ごとにタグをグループ化
+    const tagsByInternshipId = new Map<string, InternshipTag[]>();
+    
+    (tagData ?? []).forEach((item: any) => {
+      if (item.tag && item.internship_id) {
+        const tags = tagsByInternshipId.get(item.internship_id) || [];
+        tags.push(item.tag);
+        tagsByInternshipId.set(item.internship_id, tags);
+      }
+    });
     
     // タグをマージ
     return validInternships.map((internship: any): Internship => ({
@@ -82,63 +66,19 @@ const _fetchInternshipsWithCompanyAndTags = async (): Promise<Internship[]> => {
       tags: tagsByInternshipId.get(internship.id) || []
     }));
   });
-};
+}
 
 export const fetchInternshipsWithCompanyAndTags = unstable_cache(
   _fetchInternshipsWithCompanyAndTags,
   ['internships-with-company-tags'],
-  {
-    revalidate: 180, // 3分間キャッシュ
-    tags: ['internships', 'companies', 'internship-tags']
-  }
+  { revalidate: 43200 } // 12時間キャッシュ
 );
 
 /**
- * 特定のインターンシップのタグを取得
- * 内部ヘルパー関数 - 親関数がキャッシュを管理するため、ここではキャッシュしない
- */
-async function fetchInternshipTagsInternal(internshipId: string): Promise<InternshipTag[]> {
-  const supabase = createSupabaseClient();
-  
-  const { data, error } = await supabase
-    .from('internship_tag_relations')
-    .select(`
-      tag:internship_tags (
-        id,
-        name,
-        category
-      )
-    `)
-    .eq('internship_id', internshipId);
-  
-  if (error) {
-    logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
-    return [];
-  }
-  
-  // tag情報を展開
-  return (data ?? []).map((item: any) => item.tag).filter(Boolean);
-}
-
-/**
- * 特定のインターンシップのタグを取得（キャッシュ付き単体利用向け）
- */
-export async function fetchInternshipTags(internshipId: string): Promise<InternshipTag[]> {
-  return await unstable_cache(
-    () => fetchInternshipTagsInternal(internshipId),
-    [`internship-tags-${internshipId}`],
-    {
-      tags: [`internship-tags-${internshipId}`],
-      revalidate: 900 // 15分間キャッシュ（タグ情報は比較的静的）
-    }
-  )();
-}
-
-/**
  * 特定のインターンシップ詳細を取得（会社情報・タグ付き）
- * キャッシュ: 10分間（個別詳細ページ用）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchInternshipById = async (internshipId: string): Promise<Internship | null> => {
+async function _fetchInternshipById(internshipId: string): Promise<Internship | null> {
   return measurePerformance(`fetchInternshipById-${internshipId}`, async () => {
     const supabase = createSupabaseClient();
     
@@ -155,32 +95,45 @@ const _fetchInternshipById = async (internshipId: string): Promise<Internship | 
     
     if (!internship) return null;
     
-    // タグを取得（内部関数を使用してキャッシュの二重化を防ぐ）
-    const tags = await fetchInternshipTagsInternal(internshipId);
+    // タグを取得
+    const { data: tagData, error: tagError } = await supabase
+      .from('internship_tag_relations')
+      .select(`
+        tag:internship_tags (
+          id,
+          name,
+          category
+        )
+      `)
+      .eq('internship_id', internshipId);
+    
+    if (tagError) {
+      logDbError('fetchInternshipTags', tagError, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
+    }
+    
+    // tag情報を展開
+    const tags = (tagData ?? []).map((item: any) => item.tag).filter(Boolean);
     
     return {
       ...internship,
       tags
     };
   });
-};
+}
 
-export const fetchInternshipById = (internshipId: string) => 
+export const fetchInternshipById = (internshipId: string) =>
   unstable_cache(
     () => _fetchInternshipById(internshipId),
     [`internship-${internshipId}`],
-    {
-      revalidate: 600, // 10分間キャッシュ
-      tags: ['internships', 'companies', `internship-${internshipId}`]
-    }
+    { revalidate: 43200 } // 12時間キャッシュ
   )();
 
 /**
  * 特定企業のインターンシップ一覧を取得（タグ付き）
  * タグは一括取得してN+1問題を解消
- * キャッシュ: 5分間（企業毎のインターンデータ）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchInternshipsByCompanyId = async (companyId: string): Promise<Internship[]> => {
+async function _fetchInternshipsByCompanyId(companyId: string): Promise<Internship[]> {
   return measurePerformance(`fetchInternshipsByCompanyId-${companyId}`, async () => {
     const supabase = createSupabaseClient();
     
@@ -203,7 +156,32 @@ const _fetchInternshipsByCompanyId = async (companyId: string): Promise<Internsh
     const internshipIds = internships.map((i: any) => i.id);
     
     // タグを一括取得
-    const tagsByInternshipId = await fetchInternshipTagsBulk(internshipIds);
+    const { data: tagData, error: tagError } = await supabase
+      .from('internship_tag_relations')
+      .select(`
+        internship_id,
+        tag:internship_tags (
+          id,
+          name,
+          category
+        )
+      `)
+      .in('internship_id', internshipIds);
+    
+    if (tagError) {
+      logDbError('fetchInternshipTagsBulk', tagError, `SELECT internship_tag_relations WHERE internship_id IN (${internshipIds.length} items)`);
+    }
+
+    // internship_id ごとにタグをグループ化
+    const tagsByInternshipId = new Map<string, InternshipTag[]>();
+    
+    (tagData ?? []).forEach((item: any) => {
+      if (item.tag && item.internship_id) {
+        const tags = tagsByInternshipId.get(item.internship_id) || [];
+        tags.push(item.tag);
+        tagsByInternshipId.set(item.internship_id, tags);
+      }
+    });
     
     // タグをマージ
     return internships.map((internship: any): Internship => ({
@@ -211,14 +189,11 @@ const _fetchInternshipsByCompanyId = async (companyId: string): Promise<Internsh
       tags: tagsByInternshipId.get(internship.id) || []
     }));
   });
-};
+}
 
-export const fetchInternshipsByCompanyId = (companyId: string) => 
+export const fetchInternshipsByCompanyId = (companyId: string) =>
   unstable_cache(
     () => _fetchInternshipsByCompanyId(companyId),
     [`company-internships-${companyId}`],
-    {
-      revalidate: 300, // 5分間キャッシュ
-      tags: ['internships', 'companies', `company-${companyId}`]
-    }
+    { revalidate: 43200 } // 12時間キャッシュ
   )();

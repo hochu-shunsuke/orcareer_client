@@ -10,8 +10,6 @@ import { NavigationBar } from "@/components/navigation-bar"
 import { Footer } from "@/components/footer"
 import { fetchInternshipById } from "@/lib/fetch-internships"
 
-// Next.js ISR設定: 12時間キャッシュ
-export const revalidate = 43200;
 
 interface PageProps {
   params: Promise<{

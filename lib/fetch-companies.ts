@@ -4,10 +4,10 @@ import { logDbError, measurePerformance } from "@/lib/logger";
 import { unstable_cache } from 'next/cache';
 
 /**
- * companiesテーブル＋recruitments（求人）をJOINして取得するサーバー用関数
- * キャッシュ: 5分間（企業データは頻繁に変更されない）
+ * companiesテーブル＋recruitments（求人）をJOINして取得
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchCompaniesWithRecruitments = async (): Promise<Company[]> => {
+async function _fetchCompaniesWithRecruitments(): Promise<Company[]> {
   return measurePerformance('fetchCompaniesWithRecruitments', async () => {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
@@ -22,22 +22,19 @@ const _fetchCompaniesWithRecruitments = async (): Promise<Company[]> => {
     
     return data ?? [];
   });
-};
+}
 
 export const fetchCompaniesWithRecruitments = unstable_cache(
   _fetchCompaniesWithRecruitments,
   ['companies-with-recruitments'],
-  {
-    revalidate: 300, // 5分間キャッシュ
-    tags: ['companies', 'recruitments']
-  }
+  { revalidate: 43200 } // 12時間キャッシュ
 );
 
 /**
  * 企業IDで1件の企業情報を取得
- * キャッシュ: 10分間（個別企業データはより安定）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchCompanyById = async (companyId: string): Promise<Company | null> => {
+async function _fetchCompanyById(companyId: string): Promise<Company | null> {
   return measurePerformance(`fetchCompanyById-${companyId}`, async () => {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
@@ -53,14 +50,11 @@ const _fetchCompanyById = async (companyId: string): Promise<Company | null> => 
     
     return data;
   });
-};
+}
 
-export const fetchCompanyById = (companyId: string) => 
+export const fetchCompanyById = (companyId: string) =>
   unstable_cache(
     () => _fetchCompanyById(companyId),
     [`company-${companyId}`],
-    {
-      revalidate: 600, // 10分間キャッシュ
-      tags: ['companies', `company-${companyId}`]
-    }
+    { revalidate: 43200 } // 12時間キャッシュ
   )();
