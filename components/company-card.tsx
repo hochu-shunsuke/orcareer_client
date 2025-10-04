@@ -86,8 +86,10 @@ export function CompanyCard({ company }: CompanyCardProps) {
         </div>
         {/* 右下ボタン配置 */}
         <div className="absolute right-6 bottom-4 flex gap-3">
-          <Button asChild size="sm" onClick={(e) => e.stopPropagation()}>
-            <Link href={`/companies/${company.id}`}>企業詳細</Link>
+          <Button asChild size="sm">
+            <Link href={`/companies/${company.id}`} onClick={(e) => e.stopPropagation()}>
+              企業詳細
+            </Link>
           </Button>
           <Button 
             size="sm" 
