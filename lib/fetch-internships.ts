@@ -95,37 +95,30 @@ export const fetchInternshipsWithCompanyAndTags = unstable_cache(
 
 /**
  * 特定のインターンシップのタグを取得
+ * Note: This function does NOT have its own cache layer to avoid double-caching.
+ * Parent functions (fetchInternshipById, fetchInternshipsWithCompanyAndTags) handle caching.
  */
 export async function fetchInternshipTags(internshipId: string): Promise<InternshipTag[]> {
-  return await unstable_cache(
-    async () => {
-      const supabase = createSupabaseClient();
-      
-      const { data, error } = await supabase
-        .from('internship_tag_relations')
-        .select(`
-          tag:internship_tags (
-            id,
-            name,
-            category
-          )
-        `)
-        .eq('internship_id', internshipId);
-      
-      if (error) {
-        logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
-        return [];
-      }
-      
-      // tag情報を展開
-      return (data ?? []).map((item: any) => item.tag).filter(Boolean);
-    },
-    [`internship-tags-${internshipId}`],
-    {
-      tags: [`internship-tags-${internshipId}`],
-      revalidate: 900 // 15分間キャッシュ（タグ情報は比較的静的）
-    }
-  )();
+  const supabase = createSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('internship_tag_relations')
+    .select(`
+      tag:internship_tags (
+        id,
+        name,
+        category
+      )
+    `)
+    .eq('internship_id', internshipId);
+  
+  if (error) {
+    logDbError('fetchInternshipTags', error, `SELECT internship_tag_relations WHERE internship_id=${internshipId}`);
+    return [];
+  }
+  
+  // tag情報を展開
+  return (data ?? []).map((item: any) => item.tag).filter(Boolean);
 }
 
 /**
