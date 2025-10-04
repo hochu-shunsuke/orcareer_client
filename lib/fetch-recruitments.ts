@@ -5,9 +5,9 @@ import { unstable_cache } from 'next/cache';
 
 /**
  * 全求人を会社情報付きで取得
- * キャッシュ: 5分間（求人データは中程度の頻度で更新）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchRecruitmentsWithCompany = async (): Promise<Recruitment[]> => {
+async function _fetchRecruitmentsWithCompany(): Promise<Recruitment[]> {
   return measurePerformance('fetchRecruitmentsWithCompany', async () => {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
@@ -25,22 +25,19 @@ const _fetchRecruitmentsWithCompany = async (): Promise<Recruitment[]> => {
 
     return data ?? [];
   });
-};
+}
 
 export const fetchRecruitmentsWithCompany = unstable_cache(
   _fetchRecruitmentsWithCompany,
   ['recruitments-with-company'],
-  {
-    revalidate: 300, // 5分間キャッシュ
-    tags: ['recruitments', 'companies']
-  }
+  { revalidate: 43200 } // 12時間キャッシュ
 );
 
 /**
  * 特定企業の求人を取得
- * キャッシュ: 5分間（企業毎の求人データ）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchRecruitmentsByCompanyId = async (companyId: string): Promise<Recruitment[]> => {
+async function _fetchRecruitmentsByCompanyId(companyId: string): Promise<Recruitment[]> {
   return measurePerformance(`fetchRecruitmentsByCompanyId-${companyId}`, async () => {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
@@ -59,23 +56,20 @@ const _fetchRecruitmentsByCompanyId = async (companyId: string): Promise<Recruit
 
     return data ?? [];
   });
-};
+}
 
-export const fetchRecruitmentsByCompanyId = (companyId: string) => 
+export const fetchRecruitmentsByCompanyId = (companyId: string) =>
   unstable_cache(
     () => _fetchRecruitmentsByCompanyId(companyId),
     [`company-recruitments-${companyId}`],
-    {
-      revalidate: 300, // 5分間キャッシュ
-      tags: ['recruitments', 'companies', `company-${companyId}`]
-    }
+    { revalidate: 43200 } // 12時間キャッシュ
   )();
 
 /**
  * 求人IDで1件の求人情報を取得
- * キャッシュ: 10分間（個別詳細ページ用）
+ * キャッシュ: unstable_cache + ページレベルのrevalidateで管理
  */
-const _fetchRecruitmentById = async (recruitmentId: string): Promise<Recruitment | null> => {
+async function _fetchRecruitmentById(recruitmentId: string): Promise<Recruitment | null> {
   return measurePerformance(`fetchRecruitmentById-${recruitmentId}`, async () => {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
@@ -94,14 +88,11 @@ const _fetchRecruitmentById = async (recruitmentId: string): Promise<Recruitment
 
     return data;
   });
-};
+}
 
-export const fetchRecruitmentById = (recruitmentId: string) => 
+export const fetchRecruitmentById = (recruitmentId: string) =>
   unstable_cache(
     () => _fetchRecruitmentById(recruitmentId),
     [`recruitment-${recruitmentId}`],
-    {
-      revalidate: 600, // 10分間キャッシュ
-      tags: ['recruitments', 'companies', `recruitment-${recruitmentId}`]
-    }
+    { revalidate: 43200 } // 12時間キャッシュ
   )();

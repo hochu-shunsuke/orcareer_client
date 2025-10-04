@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { NavigationBar } from "@/components/navigation-bar"
 
-// Next.js ISR設定: 30分間キャッシュ（ホームページは比較的静的なコンテンツ）
-export const revalidate = 1800;
+// Next.js ISR設定: 12時間キャッシュ
+export const revalidate = 43200;
 
 export default function HomePage() {
   return (
