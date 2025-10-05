@@ -4,7 +4,13 @@
 export interface CompanyBasicInfo {
   id: string;
   name: string;
+  name_kana?: string | null;
   logo_url: string | null;
+  company_overviews?: {
+    industry?: {
+      name: string;
+    };
+  };
 }
 
 // companiesテーブルの全カラムに準拠したCompany型
@@ -26,6 +32,9 @@ export interface Company {
     id: string;
     company_id: string;
     industry_id: string | null;
+    industry?: {
+      name: string;
+    };
     established_year: number | null;
     headquarters_address: string | null;
     employee_count: number | null;
@@ -51,6 +60,9 @@ export interface Recruitment {
   id: string;
   company_id: string;
   job_type_id: string | null;
+  job_type?: {
+    name: string;
+  };
   job_type_description: string | null;
   job_description: string | null;
   work_location: string | null;
@@ -77,6 +89,9 @@ export interface Internship {
   company_id: string;
   title: string | null;
   job_type_id: string | null;
+  job_type?: {
+    name: string;
+  };
   job_type_description: string | null;
   job_description: string | null;
   skills_to_acquire: string | null;

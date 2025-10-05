@@ -12,7 +12,7 @@ async function _fetchCompaniesWithRecruitments(): Promise<Company[]> {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
       .from('companies')
-      .select(`*, recruitments(*), company_overviews(*), company_data(*)`)
+      .select(`*, recruitments(*, job_type:job_types(name)), company_overviews(*, industry:industries(name)), company_data(*)`)
       .order('created_at', { ascending: false });
     
     if (error) {

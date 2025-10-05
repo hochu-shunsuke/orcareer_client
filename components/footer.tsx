@@ -18,11 +18,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/jobs" className="hover:text-white transition-colors">
-                  求人検索
-                </Link>
-              </li>
-              <li>
                 <Link href="/internships" className="hover:text-white transition-colors">
                   インターンシップ
                 </Link>
@@ -33,43 +28,18 @@ export function Footer() {
             <h4 className="font-semibold mb-4">企業の方へ</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link href="/recruit" className="hover:text-white transition-colors">
-                  採用掲載
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-white transition-colors">
-                  お問い合わせ
-                </Link>
-              </li>
-              <li>
-                <Link href="/support" className="hover:text-white transition-colors">
-                  サポート
+                <Link href="https://orca-career.com/company" className="hover:text-white transition-colors">
+                  採用ご担当者様向けサイト
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">サイト情報</h4>
+            <h4 className="font-semibold mb-4">学生の方へ</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link href="/about" className="hover:text-white transition-colors">
-                  オルキャリについて
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-white transition-colors">
-                  プライバシーポリシー
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-white transition-colors">
-                  利用規約
-                </Link>
-              </li>
-              <li>
-                <Link href="/help" className="hover:text-white transition-colors">
-                  ヘルプ
+                <Link href="https://student.orca-career.com/" className="hover:text-white transition-colors">
+                  学生向けサイト
                 </Link>
               </li>
             </ul>

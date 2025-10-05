@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { NavigationBar } from "@/components/navigation-bar"
+import { Footer } from "@/components/footer"
 
 // Next.js ISR設定: 12時間キャッシュ
 export const revalidate = 43200;
@@ -89,59 +90,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">オルキャリ</h3>
-              <p className="text-gray-400">愛知県を中心とした求人・企業情報サイト</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">求人を探す</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/jobs">求人検索</Link>
-                </li>
-                <li>
-                  <Link href="/internships">インターンシップ</Link>
-                </li>
-                <li>
-                  <Link href="/companies">企業一覧</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">企業の方へ</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/recruit">採用掲載</Link>
-                </li>
-                <li>
-                  <Link href="/contact">お問い合わせ</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">サイト情報</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/about">オルキャリについて</Link>
-                </li>
-                <li>
-                  <Link href="/privacy">プライバシーポリシー</Link>
-                </li>
-                <li>
-                  <Link href="/terms">利用規約</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 オルキャリ. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
