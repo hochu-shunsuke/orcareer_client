@@ -14,25 +14,25 @@ interface CompaniesClientProps {
 
 const industryOptions = [
   { value: "all", label: "すべて" },
-  { value: "manufacturer", label: "メーカー" },
-  { value: "trading", label: "商社" },
-  { value: "retail", label: "小売・流通" },
-  { value: "finance", label: "金融" },
-  { value: "service", label: "サービス・インフラ" },
-  { value: "software", label: "ソフトウェア・通信" },
-  { value: "media", label: "広告・出版・マスコミ" }
+  { value: "manufacturer", label: "メーカー（未実装）" },
+  { value: "trading", label: "商社（未実装）" },
+  { value: "retail", label: "小売・流通（未実装）" },
+  { value: "finance", label: "金融（未実装）" },
+  { value: "service", label: "サービス・インフラ（未実装）" },
+  { value: "software", label: "ソフトウェア・通信（未実装）" },
+  { value: "media", label: "広告・出版・マスコミ（未実装）" }
 ]
 
 const jobTypeOptions = [
   { value: "all", label: "すべて" },
-  { value: "engineer", label: "エンジニア" },
-  { value: "sales", label: "営業" },
-  { value: "planning", label: "企画" },
-  { value: "marketing", label: "マーケティング" },
-  { value: "consulting", label: "コンサルタント" },
-  { value: "design", label: "デザイナー" },
-  { value: "hr", label: "人事" },
-  { value: "accounting", label: "経理・財務" }
+  { value: "engineer", label: "エンジニア（未実装）" },
+  { value: "sales", label: "営業（未実装）" },
+  { value: "planning", label: "企画（未実装）" },
+  { value: "marketing", label: "マーケティング（未実装）" },
+  { value: "consulting", label: "コンサルタント（未実装）" },
+  { value: "design", label: "デザイナー（未実装）" },
+  { value: "hr", label: "人事（未実装）" },
+  { value: "accounting", label: "経理・財務（未実装）" }
 ]
 
 export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {

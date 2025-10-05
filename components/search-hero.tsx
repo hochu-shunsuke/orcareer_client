@@ -32,7 +32,7 @@ const areaOptions = [
 
 const sortOptions = [
   { value: "created_at", label: "新着順" },
-  { value: "favorites", label: "お気に入り数順" }
+  { value: "favorites", label: "お気に入り数順（未実装）" }
 ]
 
 export function SearchHero({
