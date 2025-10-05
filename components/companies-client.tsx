@@ -50,8 +50,12 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
     sortBy: 'created_at'
   })
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
+
   const handleSearchChange = (params: SearchParams) => {
     setSearchParams(params)
+    setCurrentPage(1) // 検索条件変更時はページをリセット
   }
 
   // フィルタリング・ソートロジック
@@ -112,6 +116,17 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
     return result
   }, [initialCompanies, searchParams])
 
+  // ページネーション用のデータ計算
+  const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCompanies = filteredCompanies.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <SearchHero
@@ -140,23 +155,63 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
                   <p className="text-sm mt-2">検索条件を変更してお試しください</p>
                 </div>
               ) : (
-                filteredCompanies.map((company) => (
+                currentCompanies.map((company) => (
                   <CompanyCard key={company.id} company={company} />
                 ))
               )}
             </div>
 
-            {/* Pagination (TODO: 実装) */}
-            {filteredCompanies.length > 0 && (
-              <div className="flex justify-center mt-8">
-                <div className="flex gap-2 flex-wrap">
-                  <Button variant="outline" size="sm">
+            {/* Pagination */}
+            {filteredCompanies.length > 0 && totalPages > 1 && (
+              <div className="flex flex-col items-center gap-4 mt-8">
+                <div className="text-sm text-gray-600">
+                  {startIndex + 1}〜{Math.min(endIndex, filteredCompanies.length)}件 / 全{filteredCompanies.length}件
+                </div>
+                <div className="flex gap-2 flex-wrap justify-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
                     前へ
                   </Button>
-                  <Button className="bg-orange-600" size="sm">
-                    1
-                  </Button>
-                  <Button variant="outline" size="sm">
+                  
+                  {/* ページ番号ボタン */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // 現在のページ周辺と最初・最後のページのみ表示
+                    const showPage = 
+                      page === 1 || 
+                      page === totalPages || 
+                      (page >= currentPage - 2 && page <= currentPage + 2)
+                    
+                    if (!showPage) {
+                      // 省略記号を表示（重複しないように）
+                      if (page === currentPage - 3 || page === currentPage + 3) {
+                        return <span key={page} className="px-2 text-gray-400">...</span>
+                      }
+                      return null
+                    }
+                    
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={currentPage === page ? "bg-orange-600 hover:bg-orange-700" : ""}
+                      >
+                        {page}
+                      </Button>
+                    )
+                  })}
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
                     次へ
                   </Button>
                 </div>
