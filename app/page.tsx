@@ -6,6 +6,8 @@ import { Footer } from "@/components/footer"
 import { fetchCompaniesWithRecruitments } from "@/lib/fetch-companies"
 import { fetchInternshipsWithCompanyAndTags } from "@/lib/fetch-internships"
 import { InternshipCard } from "@/components/internship-card"
+import { ArticleCard } from "@/components/article-card"
+import { EventCard } from "@/components/event-card"
 import Image from "next/image"
 
 // Next.js ISR設定: 12時間キャッシュ
@@ -27,21 +29,21 @@ export default async function HomePage() {
     })
     .slice(0, 5)
 
-  // 新着のインターンシップ（最新4件）
+  // 新着のインターンシップ（最新３件）
   const featuredInternships = internships
     .sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
       return dateB - dateA
     })
-    .slice(0, 4)
+    .slice(0, 3)
 
   return (
     <div className="min-h-screen bg-white">
       <NavigationBar />
 
-      {/* Hero Section */}
-      <section className="bg-white py-16 md:py-20">
+      {/* ヒーローセクション */}
+      <section className="bg-white pt-24 pb-16 md:pt-28 md:pb-10">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl md:text-6xl font-bold mb-4 text-black">
@@ -104,6 +106,69 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* イベント情報 */}
+      <section className="py-16 bg-orange-600">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto mb-8 flex justify-between items-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-white">イベント情報</h2>
+            <Link href="https://student.orca-career.com/events">
+              <Button variant="outline" className="bg-white text-orange-600 hover:bg-gray-100 border-white font-bold">すべて見る</Button>
+            </Link>
+          </div>
+          <div className="bg-white rounded-lg max-w-4xl mx-auto divide-y divide-gray-200">
+            <EventCard
+              title="合同企業説明会2024"
+              date="2024年12月15日"
+              link="https://student.orca-career.com/events/career-fair-2024"
+            />
+            <EventCard
+              title="ES添削ワークショップ"
+              date="2024年12月20日"
+              link="https://student.orca-career.com/events/es-workshop"
+            />
+            <EventCard
+              title="模擬面接会"
+              date="2025年1月10日"
+              link="https://student.orca-career.com/events/mock-interview"
+            />
+            <EventCard
+              title="業界研究セミナー"
+              date="2025年1月15日"
+              link="https://student.orca-career.com/events/industry-seminar"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 学生向け記事 */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto mb-8 flex justify-between items-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-black">学生向け記事</h2>
+            <Link href="https://student.orca-career.com/column" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="font-bold">すべて見る</Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <ArticleCard
+              title="名古屋でおすすめの新卒就活エージェント7選！選ぶ際のポイントも解説"
+              imageUrl="https://student.orca-career.com/wp-content/uploads/2025/09/orcr_student_icatch-12-768x403.png"
+              link="https://student.orca-career.com/nagoya-job-hunting-agent/"
+            />
+            <ArticleCard
+              title="名古屋の就活で人気の企業は？ホワイト企業15選【2025年版】"
+              imageUrl="https://student.orca-career.com/wp-content/uploads/2025/09/orcr_student_icatch-11-768x403.png"
+              link="https://student.orca-career.com/nagoya-popular-company-2025/"
+            />
+            <ArticleCard
+              title="名古屋のおすすめ就活塾を紹介！選び方のポイントも解説"
+              imageUrl="https://student.orca-career.com/wp-content/uploads/2025/09/orcr_student_icatch-768x403.png"
+              link="https://student.orca-career.com/nagoya-shukatsu-juku/"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* 統計情報 */}
       <section className="py-16 bg-orange-600">
         <div className="container mx-auto px-4">
@@ -123,7 +188,7 @@ export default async function HomePage() {
               <p className="text-white">募集職種数</p>
             </div>
             <div className="text-center">
-              <p className="text-4xl font-bold text-white mb-2">365</p>
+              <p className="text-4xl font-bold text-white mb-2">22</p>
               <p className="text-white">年間イベント数</p>
             </div>
           </div>
@@ -178,9 +243,11 @@ export default async function HomePage() {
                   <p className="text-sm text-gray-600">新着求人情報をお届け!</p>
                 </div>
               </div>
-              <Button className="bg-green-500 hover:bg-green-600 text-white px-8 shadow-sm font-bold">
-                友だち追加
-              </Button>
+              <Link href="https://lin.ee/zYiRlu5" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-green-500 hover:bg-green-600 text-white px-8 shadow-sm font-bold">
+                  友だち追加
+                </Button>
+              </Link>
             </div>
           </Card>
         </div>
