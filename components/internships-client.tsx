@@ -35,11 +35,29 @@ const jobTypeOptions = [
 ]
 
 export function InternshipsClient({ initialInternships }: InternshipsClientProps) {
+  // タグオプションを動的に生成
+  const tagOptions = useMemo(() => {
+    const allTags = new Map<string, string>()
+    initialInternships.forEach(internship => {
+      internship.tags?.forEach(tag => {
+        allTags.set(tag.id, tag.name)
+      })
+    })
+    return [
+      { value: "all", label: "すべて" },
+      ...Array.from(allTags.entries()).map(([id, name]) => ({
+        value: id,
+        label: name
+      }))
+    ]
+  }, [initialInternships])
+
   const [searchParams, setSearchParams] = useState<SearchParams>({
     keyword: '',
     area: 'all',
     industry: 'all',
     jobType: 'all',
+    tag: 'all',
     sortBy: 'created_at'
   })
 
@@ -67,6 +85,13 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
       result = result.filter(internship => {
         const location = internship.work_location || ''
         return location.includes(searchParams.area)
+      })
+    }
+
+    // タグフィルタ（こだわり条件）
+    if (searchParams.tag && searchParams.tag !== 'all') {
+      result = result.filter(internship => {
+        return internship.tags?.some(tag => tag.id === searchParams.tag)
       })
     }
 
@@ -101,9 +126,11 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
         keywordPlaceholder="職種、企業名など"
         industryOptions={industryOptions}
         jobTypeOptions={jobTypeOptions}
+        tagOptions={tagOptions}
         searchParams={searchParams}
         onSearchChange={handleSearchChange}
         resultCount={filteredInternships.length}
+        showTagFilter={true}
       />
 
       <div className="w-full">

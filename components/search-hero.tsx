@@ -10,6 +10,7 @@ export interface SearchParams {
   area: string
   industry: string
   jobType: string
+  tag?: string  // インターンシップ用タグフィルタ
   sortBy: 'created_at' | 'favorites'
 }
 
@@ -17,9 +18,11 @@ interface SearchHeroProps {
   keywordPlaceholder: string
   industryOptions: { value: string; label: string }[]
   jobTypeOptions: { value: string; label: string }[]
+  tagOptions?: { value: string; label: string }[]  // インターンシップ用
   onSearchChange: (params: SearchParams) => void
   searchParams: SearchParams
   resultCount: number
+  showTagFilter?: boolean  // タグフィルタを表示するか
 }
 
 const areaOptions = [
@@ -39,9 +42,11 @@ export function SearchHero({
   keywordPlaceholder,
   industryOptions,
   jobTypeOptions,
+  tagOptions,
   onSearchChange,
   searchParams,
-  resultCount
+  resultCount,
+  showTagFilter = false
 }: SearchHeroProps) {
   const handleChange = (field: keyof SearchParams, value: string) => {
     onSearchChange({
@@ -50,16 +55,24 @@ export function SearchHero({
     })
   }
 
+  const getSelectLabel = (value: string, options: { value: string; label: string }[], defaultLabel: string) => {
+    if (value === 'all') return defaultLabel
+    const option = options.find(opt => opt.value === value)
+    return option ? option.label : defaultLabel
+  }
+
   return (
     <div className="w-full max-w-4xl mx-auto mb-6">
       <Card className="border-2 border-gray-200 shadow-sm">
         <div className="p-4">
           {/* 上段：フィルター */}
-          <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className={`grid ${showTagFilter ? 'grid-cols-4' : 'grid-cols-3'} gap-3 mb-3`}>
             {/* 業界 */}
             <Select value={searchParams.industry} onValueChange={(value) => handleChange('industry', value)}>
               <SelectTrigger className="h-10 border-gray-300">
-                <SelectValue placeholder="業界" />
+                <SelectValue>
+                  {getSelectLabel(searchParams.industry, industryOptions, '業界')}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {industryOptions.map((option) => (
@@ -73,7 +86,9 @@ export function SearchHero({
             {/* エリア */}
             <Select value={searchParams.area} onValueChange={(value) => handleChange('area', value)}>
               <SelectTrigger className="h-10 border-gray-300">
-                <SelectValue placeholder="エリア" />
+                <SelectValue>
+                  {getSelectLabel(searchParams.area, areaOptions, 'エリア')}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {areaOptions.map((option) => (
@@ -84,10 +99,12 @@ export function SearchHero({
               </SelectContent>
             </Select>
 
-            {/* 業種 */}
+            {/* 職種 */}
             <Select value={searchParams.jobType} onValueChange={(value) => handleChange('jobType', value)}>
               <SelectTrigger className="h-10 border-gray-300">
-                <SelectValue placeholder="職種" />
+                <SelectValue>
+                  {getSelectLabel(searchParams.jobType, jobTypeOptions, '職種')}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {jobTypeOptions.map((option) => (
@@ -97,6 +114,24 @@ export function SearchHero({
                 ))}
               </SelectContent>
             </Select>
+
+            {/* こだわり条件（インターンシップのみ） */}
+            {showTagFilter && tagOptions && (
+              <Select value={searchParams.tag || 'all'} onValueChange={(value) => handleChange('tag', value)}>
+                <SelectTrigger className="h-10 border-gray-300">
+                  <SelectValue>
+                    {getSelectLabel(searchParams.tag || 'all', tagOptions, 'こだわり条件')}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {tagOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* 下段：キーワード検索 */}
