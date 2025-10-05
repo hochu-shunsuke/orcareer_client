@@ -12,30 +12,36 @@ interface InternshipsClientProps {
   initialInternships: Internship[]
 }
 
-const industryOptions = [
-  { value: "all", label: "すべて" },
-  { value: "it", label: "IT・通信（未実装）" },
-  { value: "manufacturer", label: "メーカー（未実装）" },
-  { value: "trading", label: "商社（未実装）" },
-  { value: "finance", label: "金融（未実装）" },
-  { value: "consulting", label: "コンサルティング（未実装）" },
-  { value: "service", label: "サービス（未実装）" },
-  { value: "retail", label: "小売（未実装）" }
-]
-
-const jobTypeOptions = [
-  { value: "all", label: "すべて" },
-  { value: "engineer", label: "エンジニア（未実装）" },
-  { value: "sales", label: "営業（未実装）" },
-  { value: "planning", label: "企画（未実装）" },
-  { value: "marketing", label: "マーケティング（未実装）" },
-  { value: "design", label: "デザイナー（未実装）" },
-  { value: "consulting", label: "コンサルタント（未実装）" },
-  { value: "hr", label: "人事（未実装）" }
-]
-
 export function InternshipsClient({ initialInternships }: InternshipsClientProps) {
-  // タグオプションを動的に生成
+  // 業界オプションを動的生成（company.company_overviews.industry.nameから、ソート済み）
+  const industryOptions = useMemo(() => {
+    const set = new Set<string>()
+    initialInternships.forEach(internship => {
+      const name = internship.company?.company_overviews?.industry?.name
+      if (name) set.add(name)
+    })
+    const sorted = Array.from(set).sort()
+    return [
+      { value: "all", label: "すべて" },
+      ...sorted.map(name => ({ value: name, label: name }))
+    ]
+  }, [initialInternships])
+
+  // 職種オプションを動的生成（job_type.nameから、ソート済み）
+  const jobTypeOptions = useMemo(() => {
+    const set = new Set<string>()
+    initialInternships.forEach(internship => {
+      const name = internship.job_type?.name
+      if (name) set.add(name)
+    })
+    const sorted = Array.from(set).sort()
+    return [
+      { value: "all", label: "すべて" },
+      ...sorted.map(name => ({ value: name, label: name }))
+    ]
+  }, [initialInternships])
+
+  // タグオプションを動的生成（名前でソート済み）
   const tagOptions = useMemo(() => {
     const allTags = new Map<string, string>()
     initialInternships.forEach(internship => {
@@ -43,12 +49,10 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
         allTags.set(tag.id, tag.name)
       })
     })
+    const sorted = Array.from(allTags.entries()).sort((a, b) => a[1].localeCompare(b[1]))
     return [
       { value: "all", label: "すべて" },
-      ...Array.from(allTags.entries()).map(([id, name]) => ({
-        value: id,
-        label: name
-      }))
+      ...sorted.map(([id, name]) => ({ value: id, label: name }))
     ]
   }, [initialInternships])
 
@@ -69,9 +73,9 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
   const filteredInternships = useMemo(() => {
     let result = [...initialInternships]
 
-    // キーワード検索（タイトル、企業名、職種説明、業務内容で検索）
-    if (searchParams.keyword) {
-      const keyword = searchParams.keyword.toLowerCase()
+    // キーワード検索（タイトル、企業名、企業名カナ、職種説明、業務内容で検索）
+    if (searchParams.keyword.trim()) {
+      const keyword = searchParams.keyword.trim().toLowerCase()
       result = result.filter(internship => 
         internship.title?.toLowerCase().includes(keyword) ||
         internship.company?.name.toLowerCase().includes(keyword) ||
@@ -95,14 +99,20 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
       })
     }
 
-    // 業界フィルタ（TODO: company.industry_idのマッピングが必要）
+    // 業界フィルタ（company.company_overviews.industry.nameで絞り込み）
     if (searchParams.industry && searchParams.industry !== 'all') {
-      // 現在はスキップ
+      result = result.filter(internship => {
+        const industryName = internship.company?.company_overviews?.industry?.name || ''
+        return industryName === searchParams.industry
+      })
     }
 
-    // 業種フィルタ（TODO: job_type_idのマッピングが必要）
+    // 職種フィルタ（job_type.nameで絞り込み）
     if (searchParams.jobType && searchParams.jobType !== 'all') {
-      // 現在はスキップ
+      result = result.filter(internship => {
+        const jobTypeName = internship.job_type?.name || ''
+        return jobTypeName === searchParams.jobType
+      })
     }
 
     // ソート

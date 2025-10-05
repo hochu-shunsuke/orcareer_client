@@ -12,30 +12,36 @@ interface CompaniesClientProps {
   initialCompanies: Company[]
 }
 
-const industryOptions = [
-  { value: "all", label: "すべて" },
-  { value: "manufacturer", label: "メーカー（未実装）" },
-  { value: "trading", label: "商社（未実装）" },
-  { value: "retail", label: "小売・流通（未実装）" },
-  { value: "finance", label: "金融（未実装）" },
-  { value: "service", label: "サービス・インフラ（未実装）" },
-  { value: "software", label: "ソフトウェア・通信（未実装）" },
-  { value: "media", label: "広告・出版・マスコミ（未実装）" }
-]
-
-const jobTypeOptions = [
-  { value: "all", label: "すべて" },
-  { value: "engineer", label: "エンジニア（未実装）" },
-  { value: "sales", label: "営業（未実装）" },
-  { value: "planning", label: "企画（未実装）" },
-  { value: "marketing", label: "マーケティング（未実装）" },
-  { value: "consulting", label: "コンサルタント（未実装）" },
-  { value: "design", label: "デザイナー（未実装）" },
-  { value: "hr", label: "人事（未実装）" },
-  { value: "accounting", label: "経理・財務（未実装）" }
-]
-
 export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
+  // 業界オプションを動的生成（ソート済み）
+  const industryOptions = useMemo(() => {
+    const set = new Set<string>()
+    initialCompanies.forEach((company: Company) => {
+      const name = company.company_overviews?.industry?.name
+      if (name) set.add(name)
+    })
+    const sorted = Array.from(set).sort()
+    return [
+      { value: "all", label: "すべて" },
+      ...sorted.map(name => ({ value: name, label: name }))
+    ]
+  }, [initialCompanies])
+
+  // 職種オプションを動的生成（ソート済み）
+  const jobTypeOptions = useMemo(() => {
+    const set = new Set<string>()
+    initialCompanies.forEach((company: Company) => {
+      company.recruitments?.forEach(rec => {
+        const name = rec.job_type?.name
+        if (name) set.add(name)
+      })
+    })
+    const sorted = Array.from(set).sort()
+    return [
+      { value: "all", label: "すべて" },
+      ...sorted.map(name => ({ value: name, label: name }))
+    ]
+  }, [initialCompanies])
   const [searchParams, setSearchParams] = useState<SearchParams>({
     keyword: '',
     area: 'all',
@@ -53,8 +59,8 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
     let result = [...initialCompanies]
 
     // キーワード検索（企業名、カナ、プロフィール、事業内容で検索）
-    if (searchParams.keyword) {
-      const keyword = searchParams.keyword.toLowerCase()
+    if (searchParams.keyword.trim()) {
+      const keyword = searchParams.keyword.trim().toLowerCase()
       result = result.filter(company => 
         company.name.toLowerCase().includes(keyword) ||
         company.name_kana?.toLowerCase().includes(keyword) ||
@@ -72,14 +78,20 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
       })
     }
 
-    // 業界フィルタ（TODO: industry_idのマッピングが必要）
+    // 業界フィルタ（industry.nameで絞り込み）
     if (searchParams.industry && searchParams.industry !== 'all') {
-      // 現在はスキップ（industry_idとの対応が必要）
+      result = result.filter(company => {
+        const industryName = company.company_overviews?.industry?.name || ''
+        return industryName === searchParams.industry
+      })
     }
 
-    // 業種フィルタ（TODO: job_type_idのマッピングが必要）
+    // 業種フィルタ（recruitments[].job_type.nameで絞り込み）
     if (searchParams.jobType && searchParams.jobType !== 'all') {
-      // 現在はスキップ（recruitmentsのjob_type_idとの対応が必要）
+      result = result.filter(company => {
+        // 1つでも該当する職種があれば表示
+        return company.recruitments?.some(rec => rec.job_type?.name === searchParams.jobType)
+      })
     }
 
     // ソート
