@@ -10,11 +10,11 @@
 
 ### プロジェクト構成
 
-- **Next.js 14+ App Router**: Server Components + Client Components
+- **Next.js 15 App Router**: Server Components + Client Components
 - **データ取得**: Supabase PostgreSQL
 - **キャッシュ戦略**: `unstable_cache` + ISR（12時間revalidate）
-- **ページ数**: 16ファイル（app配下）
-- **データ規模**: 企業300件、求人・インターン最大1,200件
+- **ページ数**: 7ファイル（app配下）
+- **データ規模**: 企業300件、求人・インターン最大合わせて1,200件
 
 ### 現在の実装
 
