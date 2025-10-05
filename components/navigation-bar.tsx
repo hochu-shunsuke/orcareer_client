@@ -40,8 +40,8 @@ export function NavigationBar({
   const getNavItemClass = (itemPage: string) => {
     const isActive = currentPage === itemPage
     return isActive 
-      ? "text-orange-600 font-semibold"
-      : "text-gray-600 hover:text-orange-600"
+      ? "text-orange-600 font-bold"
+      : "text-gray-600 hover:text-orange-600 font-bold"
   }
 
   return (
@@ -74,11 +74,11 @@ export function NavigationBar({
           {/* Auth buttons */}
           <div>
             {!user ? (
-              <a href="/auth/login" className="hidden md:inline-block text-orange-600 border border-orange-600 px-3 py-1 rounded hover:bg-orange-50">ログイン</a>
+              <a href="/auth/login" className="hidden md:inline-block text-orange-600 border-2 border-orange-600 px-3 py-1 rounded hover:bg-orange-50 font-bold">ログイン</a>
             ) : (
               <div className="flex items-center space-x-3">
                 <Link href={`/user`}>
-                  <Button variant="outline" className="hidden md:block border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent">
+                  <Button variant="outline" className="hidden md:block border-2 border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent font-bold">
                     マイページ
                   </Button>
                 </Link>
@@ -104,14 +104,14 @@ export function NavigationBar({
                     <SheetTitle>メニュー</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-6 pt-8">
-                    <Link href="/" className="text-lg font-semibold text-gray-800 hover:text-orange-600">
+                    <Link href="/" className="text-lg font-bold text-gray-800 hover:text-orange-600">
                       TOP
                     </Link>
                     {navigationItems.map((item) => (
                       <Link 
                         key={item.href}
                         href={item.href} 
-                        className={`text-lg font-semibold ${
+                        className={`text-lg font-bold ${
                           currentPage === item.href.replace('/', '') 
                             ? 'text-orange-600' 
                             : 'text-gray-800 hover:text-orange-600'
@@ -125,7 +125,7 @@ export function NavigationBar({
                         <a href="/auth/login">
                           <Button
                             variant="outline"
-                            className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent"
+                            className="w-full border-2 border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent font-bold"
                           >
                             ログイン
                           </Button>
@@ -134,7 +134,7 @@ export function NavigationBar({
                         <Link href={`/user`}>
                           <Button
                             variant="outline"
-                            className="w-full border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent"
+                            className="w-full border-2 border-orange-600 text-orange-600 hover:bg-orange-50 bg-transparent font-bold"
                           >
                             マイページ
                           </Button>

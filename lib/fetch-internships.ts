@@ -12,10 +12,22 @@ async function _fetchInternshipsWithCompanyAndTags(): Promise<Internship[]> {
   return measurePerformance('fetchInternshipsWithCompanyAndTags', async () => {
     const supabase = createSupabaseClient();
     
-    // internships + companies
+    // internships + companies + company_overviews.industry + job_types
     const { data: internships, error } = await supabase
       .from('internships')
-      .select(`*, company:companies(*)`)
+      .select(`
+        *,
+        company:companies(
+          id,
+          name,
+          name_kana,
+          logo_url,
+          company_overviews(
+            industry:industries(name)
+          )
+        ),
+        job_type:job_types(name)
+      `)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -84,7 +96,19 @@ async function _fetchInternshipById(internshipId: string): Promise<Internship | 
     
     const { data: internship, error } = await supabase
       .from('internships')
-      .select(`*, company:companies(*)`)
+      .select(`
+        *,
+        company:companies(
+          id,
+          name,
+          name_kana,
+          logo_url,
+          company_overviews(
+            industry:industries(name)
+          )
+        ),
+        job_type:job_types(name)
+      `)
       .eq('id', internshipId)
       .single();
     
