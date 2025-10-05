@@ -46,7 +46,9 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
     const allTags = new Map<string, string>()
     initialInternships.forEach(internship => {
       internship.tags?.forEach(tag => {
-        allTags.set(tag.id, tag.name)
+        if (tag?.id && tag?.name) {
+          allTags.set(tag.id, tag.name)
+        }
       })
     })
     const sorted = Array.from(allTags.entries()).sort((a, b) => a[1].localeCompare(b[1]))
@@ -78,7 +80,8 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
       const keyword = searchParams.keyword.trim().toLowerCase()
       result = result.filter(internship => 
         internship.title?.toLowerCase().includes(keyword) ||
-        internship.company?.name.toLowerCase().includes(keyword) ||
+        internship.company?.name?.toLowerCase().includes(keyword) ||
+        internship.company?.name_kana?.toLowerCase().includes(keyword) ||
         internship.job_type_description?.toLowerCase().includes(keyword) ||
         internship.job_description?.toLowerCase().includes(keyword)
       )
@@ -87,39 +90,43 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
     // エリアフィルタ（勤務地で絞り込み）
     if (searchParams.area && searchParams.area !== 'all') {
       result = result.filter(internship => {
-        const location = internship.work_location || ''
-        return location.includes(searchParams.area)
+        const location = internship.work_location ?? ''
+        const area = searchParams.area ?? ''
+        return location.includes(area)
       })
     }
 
     // タグフィルタ（こだわり条件）
     if (searchParams.tag && searchParams.tag !== 'all') {
+      const selectedTag = searchParams.tag ?? ''
       result = result.filter(internship => {
-        return internship.tags?.some(tag => tag.id === searchParams.tag)
+        return internship.tags?.some(tag => tag?.id === selectedTag) ?? false
       })
     }
 
     // 業界フィルタ（company.company_overviews.industry.nameで絞り込み）
     if (searchParams.industry && searchParams.industry !== 'all') {
       result = result.filter(internship => {
-        const industryName = internship.company?.company_overviews?.industry?.name || ''
-        return industryName === searchParams.industry
+        const industryName = internship.company?.company_overviews?.industry?.name ?? ''
+        const selectedIndustry = searchParams.industry ?? ''
+        return industryName === selectedIndustry
       })
     }
 
     // 職種フィルタ（job_type.nameで絞り込み）
     if (searchParams.jobType && searchParams.jobType !== 'all') {
       result = result.filter(internship => {
-        const jobTypeName = internship.job_type?.name || ''
-        return jobTypeName === searchParams.jobType
+        const jobTypeName = internship.job_type?.name ?? ''
+        const selectedJobType = searchParams.jobType ?? ''
+        return jobTypeName === selectedJobType
       })
     }
 
     // ソート
     if (searchParams.sortBy === 'created_at') {
       result.sort((a, b) => {
-        const dateA = new Date(a.created_at || 0).getTime()
-        const dateB = new Date(b.created_at || 0).getTime()
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
         return dateB - dateA // 新しい順
       })
     } else if (searchParams.sortBy === 'favorites') {

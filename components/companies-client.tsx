@@ -62,7 +62,7 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
     if (searchParams.keyword.trim()) {
       const keyword = searchParams.keyword.trim().toLowerCase()
       result = result.filter(company => 
-        company.name.toLowerCase().includes(keyword) ||
+        company.name?.toLowerCase().includes(keyword) ||
         company.name_kana?.toLowerCase().includes(keyword) ||
         company.company_data?.profile?.toLowerCase().includes(keyword) ||
         company.company_data?.business_content?.toLowerCase().includes(keyword)
@@ -72,33 +72,36 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
     // エリアフィルタ（本社所在地で絞り込み）
     if (searchParams.area && searchParams.area !== 'all') {
       result = result.filter(company => {
-        const headquarters = company.company_overviews?.headquarters_address || 
-                           company.company_data?.headquarters_location || ''
-        return headquarters.includes(searchParams.area)
+        const headquarters = company.company_overviews?.headquarters_address ?? 
+                           company.company_data?.headquarters_location ?? ''
+        const area = searchParams.area ?? ''
+        return headquarters.includes(area)
       })
     }
 
     // 業界フィルタ（industry.nameで絞り込み）
     if (searchParams.industry && searchParams.industry !== 'all') {
       result = result.filter(company => {
-        const industryName = company.company_overviews?.industry?.name || ''
-        return industryName === searchParams.industry
+        const industryName = company.company_overviews?.industry?.name ?? ''
+        const selectedIndustry = searchParams.industry ?? ''
+        return industryName === selectedIndustry
       })
     }
 
     // 業種フィルタ（recruitments[].job_type.nameで絞り込み）
     if (searchParams.jobType && searchParams.jobType !== 'all') {
+      const selectedJobType = searchParams.jobType ?? ''
       result = result.filter(company => {
         // 1つでも該当する職種があれば表示
-        return company.recruitments?.some(rec => rec.job_type?.name === searchParams.jobType)
+        return company.recruitments?.some(rec => rec.job_type?.name === selectedJobType) ?? false
       })
     }
 
     // ソート
     if (searchParams.sortBy === 'created_at') {
       result.sort((a, b) => {
-        const dateA = new Date(a.created_at || 0).getTime()
-        const dateB = new Date(b.created_at || 0).getTime()
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
         return dateB - dateA // 新しい順
       })
     } else if (searchParams.sortBy === 'favorites') {

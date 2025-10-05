@@ -49,10 +49,15 @@ export function SearchHero({
   showTagFilter = false
 }: SearchHeroProps) {
   const handleChange = (field: keyof SearchParams, value: string) => {
-    onSearchChange({
+    const updatedParams = {
       ...searchParams,
       [field]: value
-    })
+    }
+    // tagフィールドが存在しない場合は削除
+    if (field === 'tag' && !showTagFilter) {
+      delete updatedParams.tag
+    }
+    onSearchChange(updatedParams)
   }
 
   const getSelectLabel = (value: string, options: { value: string; label: string }[], defaultLabel: string) => {
