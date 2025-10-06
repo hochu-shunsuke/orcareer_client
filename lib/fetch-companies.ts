@@ -39,7 +39,7 @@ async function _fetchCompanyById(companyId: string): Promise<Company | null> {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
       .from('companies')
-      .select(`*, company_overviews(*), company_data(*)`)
+      .select(`*, company_overviews(*, industry:industries(name)), company_data(*)`)
       .eq('id', companyId)
       .single();
     
