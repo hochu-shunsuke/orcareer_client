@@ -132,6 +132,12 @@ export default async function CompanyDetailPage({ params, searchParams }: Compan
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {company.company_overviews?.industry?.name && (
+                        <div>
+                          <h4 className="font-semibold mb-2">業界</h4>
+                          <p className="text-gray-600">{company.company_overviews.industry.name}</p>
+                        </div>
+                      )}
                       {company.company_overviews?.established_year && (
                         <div>
                           <h4 className="font-semibold mb-2">設立年</h4>
