@@ -26,19 +26,11 @@ export function createServerSupabaseClient(): SupabaseClient {
   return supabaseServerClient;
 }
 
-/**
- * Auth0 JWT を使用した認証付きサーバークライアント
- * RLSポリシーが適用される
- * 用途: ユーザー固有のデータアクセス（サーバーサイド）
- * 
- * @param accessToken - Auth0から取得したJWTアクセストークン
- */
 export function createAuthenticatedServerClient(accessToken: string): SupabaseClient {
   if (!SUPABASE_ANON_KEY) {
     throw new Error('Missing SUPABASE_ANON_KEY in server environment');
   }
   
-  // SUPABASE_URLは上でチェック済みなので、ここでは安全にキャスト
   return createClient(SUPABASE_URL!, SUPABASE_ANON_KEY, {
     auth: { 
       autoRefreshToken: false, 
