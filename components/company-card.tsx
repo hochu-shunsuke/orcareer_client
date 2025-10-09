@@ -2,6 +2,7 @@
 
 import { Company } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ClickableCard } from "@/components/common/clickable-card";
@@ -44,6 +45,11 @@ export function CompanyCard({ company }: CompanyCardProps) {
               )}
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
+              {company.company_overviews?.industry?.name && (
+                <Badge variant="default" className="bg-orange-600 hover:bg-orange-700 text-white">
+                  {company.company_overviews.industry.name}
+                </Badge>
+              )}
               <span className="inline-block border border-neutral-200 rounded-full px-3 py-0.5 text-xs font-medium bg-white">本社: {company.company_data?.headquarters_location ?? '未設定'}</span>
               <span className="inline-block border border-neutral-200 rounded-full px-3 py-0.5 text-xs font-medium bg-white">オフィス: {company.company_data?.offices ?? '未設定'}</span>
               <span className="inline-block border border-neutral-200 rounded-full px-3 py-0.5 text-xs font-medium bg-white">従業員数: {company.company_overviews?.employee_count ?? '未設定'}</span>

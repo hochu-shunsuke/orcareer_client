@@ -79,18 +79,6 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
   const filteredInternships = useMemo(() => {
     let result = [...initialInternships]
 
-    // キーワード検索（タイトル、企業名、企業名カナ、職種説明、業務内容で検索）
-    if (searchParams.keyword.trim()) {
-      const keyword = searchParams.keyword.trim().toLowerCase()
-      result = result.filter(internship => 
-        internship.title?.toLowerCase().includes(keyword) ||
-        internship.company?.name?.toLowerCase().includes(keyword) ||
-        internship.company?.name_kana?.toLowerCase().includes(keyword) ||
-        internship.job_type_description?.toLowerCase().includes(keyword) ||
-        internship.job_description?.toLowerCase().includes(keyword)
-      )
-    }
-
     // エリアフィルタ（勤務地で絞り込み）
     if (searchParams.area && searchParams.area !== 'all') {
       result = result.filter(internship => {
@@ -126,6 +114,46 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
       })
     }
 
+    // キーワード検索（タイトル、企業名、企業名カナ、職種説明、業務内容で検索）
+    // セレクタで選択されている値（業界、エリア、職種、タグ）は検索対象から除外
+    if (searchParams.keyword.trim()) {
+      const keyword = searchParams.keyword.trim().toLowerCase()
+      
+      result = result.filter(internship => {
+        // 基本情報での検索
+        const matchesBasicInfo = 
+          internship.title?.toLowerCase().includes(keyword) ||
+          internship.company?.name?.toLowerCase().includes(keyword) ||
+          internship.company?.name_kana?.toLowerCase().includes(keyword) ||
+          internship.job_type_description?.toLowerCase().includes(keyword) ||
+          internship.job_description?.toLowerCase().includes(keyword)
+        
+        // セレクタで選択されている業界名を除外
+        const industryName = internship.company?.company_overviews?.industry?.name?.toLowerCase() || ''
+        const isIndustrySelected = searchParams.industry !== 'all'
+        const matchesIndustry = !isIndustrySelected && industryName.includes(keyword)
+        
+        // セレクタで選択されているエリアを除外
+        const location = (internship.work_location ?? '').toLowerCase()
+        const isAreaSelected = searchParams.area !== 'all'
+        const matchesArea = !isAreaSelected && location.includes(keyword)
+        
+        // セレクタで選択されている職種を除外
+        const jobTypeName = internship.job_type?.name?.toLowerCase() || ''
+        const isJobTypeSelected = searchParams.jobType !== 'all'
+        const matchesJobType = !isJobTypeSelected && jobTypeName.includes(keyword)
+        
+        // セレクタで選択されているタグを除外
+        const isTagSelected = searchParams.tag !== 'all'
+        const matchesTag = !isTagSelected && 
+          (internship.tags?.some(tag => 
+            tag?.name?.toLowerCase().includes(keyword)
+          ) ?? false)
+        
+        return matchesBasicInfo || matchesIndustry || matchesArea || matchesJobType || matchesTag
+      })
+    }
+
     // ソート
     if (searchParams.sortBy === 'created_at') {
       result.sort((a, b) => {
@@ -155,7 +183,7 @@ export function InternshipsClient({ initialInternships }: InternshipsClientProps
   return (
     <div className="container mx-auto px-4 py-8">
       <SearchHero
-        keywordPlaceholder="職種、企業名など"
+        keywordPlaceholder="エンジニア，商品企画など..."
         industryOptions={industryOptions}
         jobTypeOptions={jobTypeOptions}
         tagOptions={tagOptions}
