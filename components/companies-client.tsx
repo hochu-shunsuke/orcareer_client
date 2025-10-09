@@ -62,17 +62,6 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
   const filteredCompanies = useMemo(() => {
     let result = [...initialCompanies]
 
-    // キーワード検索（企業名、カナ、プロフィール、事業内容で検索）
-    if (searchParams.keyword.trim()) {
-      const keyword = searchParams.keyword.trim().toLowerCase()
-      result = result.filter(company => 
-        company.name?.toLowerCase().includes(keyword) ||
-        company.name_kana?.toLowerCase().includes(keyword) ||
-        company.company_data?.profile?.toLowerCase().includes(keyword) ||
-        company.company_data?.business_content?.toLowerCase().includes(keyword)
-      )
-    }
-
     // エリアフィルタ（本社所在地で絞り込み）
     if (searchParams.area && searchParams.area !== 'all') {
       result = result.filter(company => {
@@ -98,6 +87,41 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
       result = result.filter(company => {
         // 1つでも該当する職種があれば表示
         return company.recruitments?.some(rec => rec.job_type?.name === selectedJobType) ?? false
+      })
+    }
+
+    // キーワード検索（企業名、カナ、プロフィール、事業内容で検索）
+    // セレクタで選択されている値（業界、エリア、職種）は検索対象から除外
+    if (searchParams.keyword.trim()) {
+      const keyword = searchParams.keyword.trim().toLowerCase()
+      
+      result = result.filter(company => {
+        // 基本情報での検索
+        const matchesBasicInfo = 
+          company.name?.toLowerCase().includes(keyword) ||
+          company.name_kana?.toLowerCase().includes(keyword) ||
+          company.company_data?.profile?.toLowerCase().includes(keyword) ||
+          company.company_data?.business_content?.toLowerCase().includes(keyword)
+        
+        // セレクタで選択されている業界名を除外
+        const industryName = company.company_overviews?.industry?.name?.toLowerCase() || ''
+        const isIndustrySelected = searchParams.industry !== 'all'
+        const matchesIndustry = !isIndustrySelected && industryName.includes(keyword)
+        
+        // セレクタで選択されているエリアを除外
+        const headquarters = (company.company_overviews?.headquarters_address ?? 
+                            company.company_data?.headquarters_location ?? '').toLowerCase()
+        const isAreaSelected = searchParams.area !== 'all'
+        const matchesArea = !isAreaSelected && headquarters.includes(keyword)
+        
+        // セレクタで選択されている職種を除外
+        const isJobTypeSelected = searchParams.jobType !== 'all'
+        const matchesJobType = !isJobTypeSelected && 
+          (company.recruitments?.some(rec => 
+            rec.job_type?.name?.toLowerCase().includes(keyword)
+          ) ?? false)
+        
+        return matchesBasicInfo || matchesIndustry || matchesArea || matchesJobType
       })
     }
 
@@ -130,7 +154,7 @@ export function CompaniesClient({ initialCompanies }: CompaniesClientProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <SearchHero
-        keywordPlaceholder="企業名、業界など"
+        keywordPlaceholder="「株式会社Josho」、「商品企画」など..."
         industryOptions={industryOptions}
         jobTypeOptions={jobTypeOptions}
         searchParams={searchParams}

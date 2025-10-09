@@ -66,8 +66,8 @@ export function InternshipCard({ internship, tags = [] }: InternshipCardProps) {
                 {tags.map((tag) => (
                   <Badge 
                     key={tag.id} 
-                    variant="secondary" 
-                    className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                    variant="default" 
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
                   >
                     {tag.name}
                   </Badge>

@@ -8,6 +8,7 @@ import { fetchInternshipsWithCompanyAndTags } from "@/lib/fetch-internships"
 import { InternshipCard } from "@/components/internship-card"
 import { ArticleCard } from "@/components/article-card"
 import { EventCard } from "@/components/event-card"
+import { CompanyListItem } from "@/components/company-list-item"
 import Image from "next/image"
 
 // Next.js ISR設定: 12時間キャッシュ
@@ -20,7 +21,7 @@ export default async function HomePage() {
     fetchInternshipsWithCompanyAndTags()
   ])
 
-  // 新着企業（最新6件）
+  // 新着企業（最新5件）
   const newCompanies = companies
     .sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
@@ -65,23 +66,9 @@ export default async function HomePage() {
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg max-w-4xl mx-auto divide-y divide-gray-200">
             {newCompanies.map((company) => (
-              <Link href={`/companies/${company.id}`} key={company.id}>
-                <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer border-2 border-white bg-white">
-                  <div className="aspect-square relative mb-3">
-                    <Image
-                      src={company.logo_url || "/placeholder-logo.png"}
-                      alt={company.name}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                  <p className="text-sm font-medium text-center text-black line-clamp-2">
-                    {company.name}
-                  </p>
-                </Card>
-              </Link>
+              <CompanyListItem key={company.id} company={company} />
             ))}
           </div>
         </div>
