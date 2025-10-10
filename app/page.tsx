@@ -198,8 +198,8 @@ export default async function HomePage() {
                     採用活動を全面的にサポートいたします。
                   </p>
                 </div>
-                                <div className="flex-shrink-0">
-                  <Link href="/for-companies">
+                <div className="flex-shrink-0">
+                  <Link href="https://orca-career.com/company " target="_blank" rel="noopener noreferrer">
                     <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg shadow-sm font-bold">
                       企業向けサービス
                     </Button>
