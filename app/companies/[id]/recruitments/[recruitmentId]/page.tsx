@@ -25,31 +25,40 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
     notFound()
   }
 
+  // モック表示用のシンプルなデータ（表示専用、関数ロジックは使わない）
+  const rAny: any = recruitment
+  const mock: any = {
+    course_name: rAny.job_type?.name || rAny.job_type_description || '未設定',
+    employment_type: '正社員（想定）',
+    assigned_role: rAny.job_type?.name || '配属部署未定',
+    hiring_flow: (rAny.selection_flow || '書類選考\n一次面接\n最終面接').split(/\n|・|、|,|\r/).map((s: string) => s.trim()).filter(Boolean).slice(0,6).join(' → '),
+    days_to_offer: '約14日',
+    selection_methods: rAny.selection_flow || '書類選考・面接',
+    target_applicants: rAny.application_requirements || '新卒（2026年卒）',
+    number_of_hires: rAny.number_of_hires || '未設定',
+    target_majors: '全学部・全学科',
+    breakdown: '学歴・専攻問わず',
+    features: rAny.tags || ['未設定'],
+    starting_salary: rAny.salary_bonus || '非公開',
+    univ_salary: rAny.salary_bonus || '非公開',
+    college_salary: '非公開',
+    allowances: rAny.allowance || '交通費支給',
+    salary_increase: '年1回',
+    bonus: '年2回',
+    annual_holidays: rAny.annual_holidays ? `${rAny.annual_holidays}日` : '非公開',
+    holidays: rAny.holidays_leave || '完全週休2日制',
+    benefits: rAny.benefits || '社会保険、通勤手当、資格支援など',
+    smoking_policy: '屋内原則禁煙（喫煙室あり）',
+    locations: rAny.work_location || '名古屋市／東京（複数）',
+    work_hours: rAny.work_hours || '9:00〜18:00（フレックスあり）',
+    access: '最寄り駅：名古屋駅 徒歩10分'
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <NavigationBar currentPage="jobs" />
 
       <div className="container mx-auto px-4 py-8">
-        {/* パンくずリスト */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-gray-600">
-          <Link 
-            href={`/companies/${id}`} 
-            className="hover:text-gray-900"
-          >
-            {recruitment.company.name}
-          </Link>
-          <span>/</span>
-          <Link 
-            href={`/companies/${id}?tab=job`} 
-            className="hover:text-gray-900"
-          >
-            本選考
-          </Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">
-            {recruitment.job_type_description || '求人詳細'}
-          </span>
-        </nav>
 
         {/* ヘッダーカード */}
         <Card className="mb-8">
@@ -130,18 +139,20 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
 
                 {/* アクションボタン */}
                 <div className="flex flex-wrap gap-3 mt-6">
-                  <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+                  {/* 主ボタン：企業カードと同じスタイル（asChildでリンクをラップ） */}
+                  <Button asChild size="lg">
                     <Link href="#application">応募する</Link>
                   </Button>
+
+                  {/* 補助ボタン：白背景＋黒ボーダーで企業カードと統一 */}
                   <Button 
-                    asChild 
-                    size="lg" 
-                    variant="outline"
-                    className="border-2"
+                    asChild
+                    size="lg"
+                    className="border-2 border-black text-black bg-white hover:bg-neutral-100 focus:ring-black"
                   >
                     <Link href={`/companies/${id}?tab=company-info`}>
-                      <Building2 className="w-4 h-4 mr-2" />
-                      この企業について
+                      <Building2 className="w-4 h-4 mr-2 inline-block align-middle" />
+                      <span className="align-middle">この企業について</span>
                     </Link>
                   </Button>
                 </div>
@@ -149,130 +160,142 @@ export default async function RecruitmentDetailPage({ params }: PageProps) {
             </div>
           </CardContent>
         </Card>
-
-        {/* 詳細情報 */}
-        <div className="grid gap-6">
-          {/* 仕事内容 */}
-          {recruitment.job_description && (
+          <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>仕事内容</CardTitle>
+                <CardTitle>募集要項</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-neutral-700 leading-relaxed whitespace-pre-wrap">
-                  {recruitment.job_description}
-                </p>
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full text-sm text-gray-700 border-collapse">
+                    <tbody>
+                      {/** row helper: label on left with gray bg, value on right **/}
+                      <tr className="border-b">
+                        <th className="w-1/3 text-left align-top bg-neutral-100 p-3 font-bold">コース名</th>
+                        <td className="p-3 text-neutral-700">{mock.course_name}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">雇用形態</th>
+                        <td className="p-3 text-neutral-700">{mock.employment_type}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">配属職種</th>
+                        <td className="p-3 text-neutral-700">{mock.assigned_role}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">採用フロー</th>
+                        <td className="p-3 text-neutral-700">{mock.hiring_flow}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">内々定までの所要日数</th>
+                        <td className="p-3 text-neutral-700">{mock.days_to_offer}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">選考方法</th>
+                        <td className="p-3 text-neutral-700">{mock.selection_methods}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">募集対象</th>
+                        <td className="p-3 text-neutral-700">{mock.target_applicants}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">募集人数</th>
+                        <td className="p-3 text-neutral-700">{mock.number_of_hires}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">募集学部・学科</th>
+                        <td className="p-3 text-neutral-700">{mock.target_majors}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">募集内訳</th>
+                        <td className="p-3 text-neutral-700">{mock.breakdown}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">募集の特徴</th>
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-2">
+                            {mock.features.map((t: string, i: number) => (
+                              <span key={i} className="inline-block bg-orange-600 text-white text-xs px-2 py-1 rounded">{t}</span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">初任給(大卒・大学院卒)</th>
+                        <td className="p-3 text-neutral-700">{mock.univ_salary}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">初任給(短大・専門・高専卒)</th>
+                        <td className="p-3 text-neutral-700">{mock.college_salary}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">諸手当（フリーワード）</th>
+                        <td className="p-3 leading-relaxed text-neutral-700 whitespace-pre-wrap">{mock.allowances}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">昇給</th>
+                        <td className="p-3 text-neutral-700">{mock.salary_increase}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">賞与</th>
+                        <td className="p-3 text-neutral-700">{mock.bonus}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">年間休日数</th>
+                        <td className="p-3 text-neutral-700">{mock.annual_holidays}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">休日休暇</th>
+                        <td className="p-3 leading-relaxed text-neutral-700 whitespace-pre-wrap">{mock.holidays}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">待遇・福利厚生・社内制度（フリーワード）</th>
+                        <td className="p-3 leading-relaxed text-neutral-700 whitespace-pre-wrap">{mock.benefits}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">受動喫煙防止の取組</th>
+                        <td className="p-3 text-neutral-700">{mock.smoking_policy}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">勤務地（複数）</th>
+                        <td className="p-3 text-neutral-700">{mock.locations}</td>
+                      </tr>
+
+                      <tr className="border-b">
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">勤務時間（フリーワード）</th>
+                        <td className="p-3 leading-relaxed text-neutral-700 whitespace-pre-wrap">{mock.work_hours}</td>
+                      </tr>
+
+                      <tr>
+                        <th className="text-left align-top bg-neutral-100 p-3 font-bold">アクセス</th>
+                        <td className="p-3 text-neutral-700">{mock.access}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* 勤務条件 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>勤務条件</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {recruitment.work_location && (
-                  <div>
-                    <h4 className="font-semibold mb-2">勤務地</h4>
-                    <p className="text-neutral-700">{recruitment.work_location}</p>
-                  </div>
-                )}
-                
-                {recruitment.work_hours && (
-                  <div>
-                    <h4 className="font-semibold mb-2">勤務時間</h4>
-                    <p className="text-neutral-700">{recruitment.work_hours}</p>
-                  </div>
-                )}
-                
-                {recruitment.salary_bonus && (
-                  <div>
-                    <h4 className="font-semibold mb-2">給与・賞与</h4>
-                    <p className="text-neutral-700">{recruitment.salary_bonus}</p>
-                  </div>
-                )}
-                
-                {recruitment.number_of_hires && (
-                  <div>
-                    <h4 className="font-semibold mb-2">募集人数</h4>
-                    <p className="text-neutral-700">{recruitment.number_of_hires}</p>
-                  </div>
-                )}
-                
-                {recruitment.annual_holidays && (
-                  <div>
-                    <h4 className="font-semibold mb-2">年間休日</h4>
-                    <p className="text-neutral-700">{recruitment.annual_holidays}日</p>
-                  </div>
-                )}
-                
-                {recruitment.holidays_leave && (
-                  <div>
-                    <h4 className="font-semibold mb-2">休日・休暇</h4>
-                    <p className="text-neutral-700 whitespace-pre-wrap">{recruitment.holidays_leave}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 待遇・福利厚生 */}
-          {recruitment.benefits && (
-            <Card>
-              <CardHeader>
-                <CardTitle>待遇・福利厚生</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-700 leading-relaxed whitespace-pre-wrap">
-                  {recruitment.benefits}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 選考フロー */}
-          {recruitment.selection_flow && (
-            <Card>
-              <CardHeader>
-                <CardTitle>選考フロー</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-700 leading-relaxed whitespace-pre-wrap">
-                  {recruitment.selection_flow}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* デバッグ用：全データ表示 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>求人データ（デバッグ用）</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="text-xs bg-gray-50 p-4 rounded overflow-auto">
-                {JSON.stringify(recruitment, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
-
-          {/* 応募セクション */}
-          <Card id="application">
-            <CardHeader>
-              <CardTitle>応募する</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-neutral-700">
-                この求人に興味をお持ちの方は、以下のボタンから応募してください。
-              </p>
-              <Button size="lg" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700">
-                応募フォームへ進む
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+          </div>
       </div>
 
       <Footer />

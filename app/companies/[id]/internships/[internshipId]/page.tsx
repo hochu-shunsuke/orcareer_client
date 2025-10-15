@@ -31,23 +31,6 @@ export default async function InternshipDetailPage({ params }: PageProps) {
       <NavigationBar currentPage="internships" />
 
       <div className="container mx-auto px-4 py-8">
-        {/* パンくずリスト */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-gray-600">
-          <Link href="/internships" className="hover:text-gray-900">
-            インターン一覧
-          </Link>
-          <span>/</span>
-          <Link 
-            href={`/companies/${id}?tab=internship`} 
-            className="hover:text-gray-900"
-          >
-            {internship.company.name}
-          </Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">
-            {internship.title || 'インターン詳細'}
-          </span>
-        </nav>
 
         {/* ヘッダーカード */}
         <Card className="mb-8">
@@ -88,14 +71,14 @@ export default async function InternshipDetailPage({ params }: PageProps) {
                   {internship.title || internship.job_description || 'インターン募集'}
                 </h1>
 
-                {/* タグ */}
+                {/* タグ（インターンカードと表示を統一） */}
                 {internship.tags && internship.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {internship.tags.map((tag) => (
                       <Badge 
                         key={tag.id} 
-                        variant="secondary" 
-                        className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                        variant="default" 
+                        className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-2 py-1"
                       >
                         {tag.name}
                       </Badge>
@@ -136,18 +119,17 @@ export default async function InternshipDetailPage({ params }: PageProps) {
 
                 {/* アクションボタン */}
                 <div className="flex flex-wrap gap-3 mt-6">
-                  <Button asChild size="lg" className="bg-orange-600 hover:bg-orange-700">
+                  <Button asChild size="lg">
                     <Link href="#application">応募する</Link>
                   </Button>
                   <Button 
                     asChild 
                     size="lg" 
-                    variant="outline"
-                    className="border-2"
+                    className="border-2 border-black text-black bg-white hover:bg-neutral-100 focus:ring-black"
                   >
                     <Link href={`/companies/${id}?tab=company-info`}>
-                      <Building2 className="w-4 h-4 mr-2" />
-                      この企業について
+                      <Building2 className="w-4 h-4 mr-2 inline-block align-middle" />
+                      <span className="align-middle">この企業について</span>
                     </Link>
                   </Button>
                 </div>
@@ -156,106 +138,136 @@ export default async function InternshipDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* 詳細情報 */}
+        {/* 詳細情報（表形式） */}
         <div className="grid gap-6">
-          {/* 仕事内容 */}
-          {internship.job_description && (
-            <Card>
-              <CardHeader>
-                <CardTitle>仕事内容</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {internship.job_description}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {/** prepare mock data for display-only **/}
+          {(() => {
+            const iAny: any = internship
+            const mock: any = {
+              job: iAny.job_type?.name || iAny.job_type_description || '未設定',
+              responsibilities: iAny.job_description || '仕事内容の詳細は未掲載',
+              schedule: iAny.onboarding_schedule || '入社後はOJTで1週間の導入、その後プロジェクト配属',
+              salary: iAny.hourly_wage || '非公開',
+              probation: iAny.probation_period || 'なし',
+              probation_pay: iAny.probation_pay || iAny.hourly_wage || '同額',
+              transportation: iAny.transportation || '支給あり（上限あり）',
+              qualifications: iAny.required_skills || '特になし（未経験可）',
+              work_days: iAny.work_days || '月〜金',
+              work_days_count: iAny.work_days_count || '週5日',
+              work_hours: iAny.work_hours || '9:00〜18:00',
+              other_conditions: iAny.other_work_conditions || '特になし',
+              target_years: iAny.target_years || '全学年',
+              selection_flow: iAny.selection_flow || '書類選考 → 面接',
+              number_of_hires: iAny.number_of_hires || '未設定',
+              employment_type: iAny.employment_type || 'インターン',
+              locations: iAny.work_location || '名古屋市',
+              nearest_station: iAny.nearest_station || '名古屋駅',
+              skills_experience: iAny.skills_to_acquire || '実務スキル、チーム開発経験',
+              features: (iAny.tags || []).length > 0 ? (iAny.tags.map((t: any) => t.name)) : ['未設定']
+            }
 
-          {/* 身につくスキル */}
-          {internship.skills_to_acquire && (
-            <Card>
-              <CardHeader>
-                <CardTitle>身につくスキル</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {internship.skills_to_acquire}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* スキル要件 */}
-          {(internship.required_skills || internship.preferred_skills) && (
-            <Card>
-              <CardHeader>
-                <CardTitle>求めるスキル</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {internship.required_skills && (
-                  <div>
-                    <h4 className="font-semibold mb-2 text-red-600">必須スキル</h4>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                      {internship.required_skills}
-                    </p>
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle>インターン詳細</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full text-sm text-gray-700 border-collapse">
+                      <tbody>
+                        <tr className="border-b">
+                          <th className="w-1/3 text-left align-top bg-neutral-100 p-3 font-semibold">職種</th>
+                          <td className="p-3 text-neutral-700">{mock.job}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">任せたい仕事</th>
+                          <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.responsibilities}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">入社後の流れ（業務スケジュール例）</th>
+                          <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.schedule}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">給与</th>
+                          <td className="p-3 text-neutral-700">{mock.salary}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">試用期間</th>
+                          <td className="p-3 text-neutral-700">{mock.probation}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">試用期間中の給与</th>
+                          <td className="p-3 text-neutral-700">{mock.probation_pay}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">交通費の支給</th>
+                          <td className="p-3 text-neutral-700">{mock.transportation}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">応募資格</th>
+                          <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.qualifications}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">勤務曜日</th>
+                          <td className="p-3 text-neutral-700">{mock.work_days}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">勤務日数</th>
+                          <td className="p-3 text-neutral-700">{mock.work_days_count}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">勤務時間</th>
+                          <td className="p-3 text-neutral-700">{mock.work_hours}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">その他勤務条件</th>
+                          <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.other_conditions}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">対象学年</th>
+                          <td className="p-3 text-neutral-700">{mock.target_years}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">選考フロー</th>
+                          <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.selection_flow}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">募集人数</th>
+                          <td className="p-3 text-neutral-700">{mock.number_of_hires}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">雇用形態</th>
+                          <td className="p-3 text-neutral-700">{mock.employment_type}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">勤務地</th>
+                          <td className="p-3 text-neutral-700">{mock.locations}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">最寄り駅</th>
+                          <td className="p-3 text-neutral-700">{mock.nearest_station}</td>
+                        </tr>
+                        <tr className="border-b">
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">この長期インターンで身につくスキル・経験</th>
+                          <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.skills_experience}</td>
+                        </tr>
+                        <tr>
+                          <th className="text-left align-top bg-neutral-100 p-3 font-semibold">この長期インターンの特徴</th>
+                          <td className="p-3">
+                            <div className="flex flex-wrap gap-2">
+                              {mock.features.map((t: string, i: number) => (
+                                <Badge key={i} variant="default" className="bg-orange-600 text-white text-xs px-2 py-1">{t}</Badge>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                )}
-                {internship.preferred_skills && (
-                  <div>
-                    <h4 className="font-semibold mb-2 text-blue-600">歓迎スキル</h4>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                      {internship.preferred_skills}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 選考フロー */}
-          {internship.selection_flow && (
-            <Card>
-              <CardHeader>
-                <CardTitle>選考フロー</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {internship.selection_flow}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 応募セクション */}
-          <Card id="application">
-            <CardHeader>
-              <CardTitle>応募について</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-700">
-                このインターンシップにご興味をお持ちいただいた方は、以下のボタンから応募してください。
-              </p>
-              <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
-                このインターンに応募する
-              </Button>
-              <Separator />
-              <div className="flex gap-3">
-                <Button asChild variant="outline" className="flex-1">
-                  <Link href={`/companies/${id}?tab=internship`}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    他のインターンを見る
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                  <Link href={`/companies/${id}?tab=company-info`}>
-                    <Building2 className="w-4 h-4 mr-2" />
-                    企業情報を見る
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )
+          })()}
         </div>
       </div>
 
