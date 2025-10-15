@@ -125,105 +125,145 @@ export default async function CompanyDetailPage({ params, searchParams }: Compan
           {/* 企業情報タブ */}
           <TabsContent value="company-info">
             <div className="grid gap-6">
-              {(company.company_overviews || company.company_data) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>企業概要</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {company.company_overviews?.industry?.name && (
-                        <div>
-                          <h4 className="font-semibold mb-2">業界</h4>
-                          <p className="text-gray-600">{company.company_overviews.industry.name}</p>
-                        </div>
-                      )}
-                      {company.company_overviews?.established_year && (
-                        <div>
-                          <h4 className="font-semibold mb-2">設立年</h4>
-                          <p className="text-gray-600">{company.company_overviews.established_year}年</p>
-                        </div>
-                      )}
-                      {company.company_overviews?.headquarters_address && (
-                        <div>
-                          <h4 className="font-semibold mb-2">本社所在地</h4>
-                          <p className="text-gray-600">{company.company_overviews.headquarters_address}</p>
-                        </div>
-                      )}
-                      {company.company_overviews?.employee_count && (
-                        <div>
-                          <h4 className="font-semibold mb-2">従業員数</h4>
-                          <p className="text-gray-600">{company.company_overviews.employee_count}名</p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <Card>
+                <CardHeader>
+                  <CardTitle>企業情報</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const cAny: any = company
+                    const ov = cAny.company_overviews || {}
+                    const data = cAny.company_data || {}
+                    const mock: any = {
+                      industry: ov.industry?.name || '未設定',
+                      headquarters: ov.headquarters_address || data.headquarters || '未設定',
+                      capital: ov.capital || data.capital || '未設定',
+                      title: cAny.listing_title || cAny.name || '未設定',
+                      revenue: ov.revenue || data.revenue || '未設定',
+                      employees: ov.employee_count || data.employee_count || '未設定',
+                      hiring_count: cAny.hiring_count || '未設定',
+                      profile_short: data.profile || cAny.description || '未設定',
+                      company_points: data.points || '未設定',
+                      product_strength: data.product_strength || '未設定',
+                      policies: data.policies || '未設定',
+                      strategy: data.strategy || '未設定',
+                      company_data_blob: JSON.stringify(data, null, 2),
+                      profile: data.profile || '未設定',
+                      business_content: data.business_content || '未設定',
+                      postal_code: ov.postal_code || data.postal_code || '未設定',
+                      headquarters_address: ov.headquarters_address || data.headquarters_address || '未設定',
+                      established: ov.established_year || data.established_year || '未設定',
+                      capital_dup: ov.capital || data.capital || '未設定',
+                      employees_jp: ov.employee_count || data.employee_count || '未設定',
+                      revenue_dup: ov.revenue || data.revenue || '未設定',
+                      offices: data.offices || '未設定',
+                      mission: data.mission || data.company_mission || '未設定',
+                      average_age: data.average_age || ov.average_age || '未設定'
+                    }
 
-              {company.company_data && (
-                <>
-                  {company.company_data.business_content && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>事業内容</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                          {company.company_data.business_content}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {company.company_data.profile && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>会社プロフィール</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                          {company.company_data.profile}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {company.company_data.offices && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>事業所</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                          {company.company_data.offices}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
-              )}
-
-              {company.website_url && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>会社紹介ページ</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-blue-600" />
-                      <a
-                        href={company.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline break-all"
-                      >
-                        {company.website_url}
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                    return (
+                      <div className="w-full overflow-x-auto">
+                        <table className="w-full text-sm text-gray-700 border-collapse">
+                          <tbody>
+                            <tr className="border-b">
+                              <th className="w-1/3 text-left align-top bg-neutral-100 p-3 font-semibold">業種</th>
+                              <td className="p-3 text-neutral-700">{mock.industry}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">本社</th>
+                              <td className="p-3 text-neutral-700">{mock.headquarters}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">資本金</th>
+                              <td className="p-3 text-neutral-700">{mock.capital}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">掲載タイトル</th>
+                              <td className="p-3 text-neutral-700">{mock.title}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">売上高</th>
+                              <td className="p-3 text-neutral-700">{mock.revenue}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">従業員</th>
+                              <td className="p-3 text-neutral-700">{mock.employees}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">募集人数</th>
+                              <td className="p-3 text-neutral-700">{mock.hiring_count}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">プロフィール</th>
+                              <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.profile_short}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-center align-middle bg-neutral-200 p-3 font-semibold">企業のポイント</th>
+                              <td className="p-3 text-neutral-700"></td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">製品・サービス力</th>
+                              <td className="p-3 text-neutral-700">{mock.product_strength}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">制度・働き方</th>
+                              <td className="p-3 text-neutral-700">{mock.policies}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">戦略・ビジョン</th>
+                              <td className="p-3 text-neutral-700">{mock.strategy}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-center align-middle bg-neutral-200 p-3 font-semibold">会社データ</th>
+                              <td className="p-3 text-neutral-700"></td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">事業内容</th>
+                              <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.business_content}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">郵便番号</th>
+                              <td className="p-3 text-neutral-700">{mock.postal_code}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">本社所在地</th>
+                              <td className="p-3 text-neutral-700">{mock.headquarters_address}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">設立</th>
+                              <td className="p-3 text-neutral-700">{mock.established}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">資本金</th>
+                              <td className="p-3 text-neutral-700">{mock.capital_dup}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">従業員（日本語入力）</th>
+                              <td className="p-3 text-neutral-700">{mock.employees_jp}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">売上高</th>
+                              <td className="p-3 text-neutral-700">{mock.revenue_dup}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">事業所（複数）</th>
+                              <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.offices}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">企業理念</th>
+                              <td className="p-3 text-neutral-700 whitespace-pre-wrap">{mock.mission}</td>
+                            </tr>
+                            <tr>
+                              <th className="text-left align-top bg-neutral-100 p-3 font-semibold">平均年齢</th>
+                              <td className="p-3 text-neutral-700">{mock.average_age}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    )
+                  })()}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -268,42 +308,44 @@ export default async function CompanyDetailPage({ params, searchParams }: Compan
             )}
           </TabsContent>
 
-          {/* 応募方法タブ - デバッグ用データ表示 */}
+          {/* 応募方法タブ */}
           <TabsContent value="application">
-            <div className="space-y-4">
-              {/* 企業データ */}
+            <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>企業データ（デバッグ用）</CardTitle>
+                  <CardTitle>応募フロー</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <pre className="text-xs bg-gray-50 p-4 rounded overflow-auto">
-                    {JSON.stringify(company, null, 2)}
-                  </pre>
-                </CardContent>
-              </Card>
+                <CardContent className="space-y-4">
+                  <ol className="list-decimal list-inside space-y-3 text-neutral-700">
+                    <li>
+                      <strong>エントリー：</strong> 当ページの「応募する」ボタン、または会社の応募フォームからエントリーしてください。履歴書（任意）、ポートフォリオ（任意）を添付できます。
+                    </li>
+                    <li>
+                      <strong>書類選考：</strong> エントリー後、3営業日以内に採用担当より結果連絡を行います。合否に関わらずメールで通知します。
+                    </li>
+                    <li>
+                      <strong>一次面接（オンライン）：</strong> 書類通過者に対して、30〜45分程度のオンライン面接（チーム/人事）を行います。
+                    </li>
+                    <li>
+                      <strong>最終面接（対面またはオンライン）：</strong> 最終選考は対面またはオンラインで行い、ビジネス理解やカルチャーフィットを確認します。
+                    </li>
+                    <li>
+                      <strong>内定・手続き：</strong> 内定通知後、勤務開始日や条件をメールでご案内します。必要書類の提出をお願いします。
+                    </li>
+                  </ol>
 
-              {/* インターンシップデータ */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>インターンシップデータ（デバッグ用）</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="text-xs bg-gray-50 p-4 rounded overflow-auto max-h-96">
-                    {JSON.stringify(internships, null, 2)}
-                  </pre>
-                </CardContent>
-              </Card>
+                  <div className="text-sm text-neutral-600">
+                    <p>※ 選考フローや日程は変更になる場合があります。応募前に最新情報をご確認ください。</p>
+                  </div>
 
-              {/* 求人データ */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>求人データ（デバッグ用）</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="text-xs bg-gray-50 p-4 rounded overflow-auto max-h-96">
-                    {JSON.stringify(recruitments, null, 2)}
-                  </pre>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                    <Button>
+                      なんとかボタン
+                    </Button>
+                    <Button variant="outline" disabled>
+                      採用ページを見る
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
